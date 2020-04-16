@@ -38,13 +38,13 @@ def dr_min_index(series):
     
 # ---------------------------------------------------------------------------------------------------
 class IO:
-    ldata = os.path.expanduser("/work/nchernya/HHbbgg_ETH_devel/root_files/")
-    xdata = "/work/nchernya/HHbbgg_ETH_devel/Training/output_files/"
-    plotFolder = os.path.expanduser("/work/nchernya/HHbbgg_ETH_devel/Training/plots/")
+    ldata = os.path.expanduser("/eos/user/m/mukherje/HH_bbgg/2016_Sample/")
+    xdata = "/afs/cern.ch/work/m/mukherje/Training_VBFHH/HHbbgg_ETH/Input_files/output_files/"
+    plotFolder = os.path.expanduser("/afs/cern.ch/work/m/mukherje/Training_VBFHH/HHbbgg_ETH/Input_files/plots/")
     signalName = []
     signalMixOfNodes = False
-    signalWhichMixOfNodes = []
-    signalMixOfNodesNormalizations = dict()
+    ggHHWhichMixOfNodes = []
+    ggHHMixOfNodesNormalizations = dict()
     signalTreeName = []
     backgroundName = []
     bkgTreeName = []
@@ -69,8 +69,8 @@ class IO:
     def use_signal_nodes(useNodes,whichNodes,normalizations):
         if useNodes :
             IO.signalMixOfNodes = True
-            IO.signalWhichMixOfNodes = whichNodes
-            IO.signalMixOfNodesNormalizations = normalizations
+            IO.ggHHWhichMixOfNodes = whichNodes
+            IO.ggHHMixOfNodesNormalizations = normalizations
 
             
    
