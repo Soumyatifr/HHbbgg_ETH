@@ -30,20 +30,20 @@ start_time = time.time()
 
 
 def main(options,args):
-  
     year=options.year
-
-    outstr = "2018_test_C2V2_training_%s"%year 
-
+    #please specify which year you want 
+    Y = 2018
+    outstr = "%s_test_C2V0_training"%Y
+    doRhoReweight = False
     dirs = ['']
     ntuples = dirs[year]
-    SMname = ['hh2018_13TeV_125_13TeV_VBFDoubleHTag_0']
-    VBFname = ['vbfhh2018_13TeV_125_13TeV_VBFDoubleHTag_0']
-    gghname = ['ggh2018_13TeV_125_13TeV_VBFDoubleHTag_0']
+    SMname = ['hh%s_13TeV_125_13TeV_VBFDoubleHTag_0'%Y]
+    VBFname = ['vbfhh%s_13TeV_125_13TeV_VBFDoubleHTag_0'%Y]
+    gghname = ['ggh%s_13TeV_125_13TeV_VBFDoubleHTag_0'%Y]
     #gghname = ['GluGluHToGG_M125_13TeV_amcatnloFXFX_pythia8_13TeV_VBFDoubleHTag_0']
-    vhname =  ['vh2018_13TeV_125_13TeV_VBFDoubleHTag_0']
-    qqhname = ['qqh2018_13TeV_125_13TeV_VBFDoubleHTag_0']
-    tthname = ['tth2018_13TeV_125_13TeV_VBFDoubleHTag_0']
+    vhname =  ['vh%s_13TeV_125_13TeV_VBFDoubleHTag_0'%Y]
+    qqhname = ['qqh%s_13TeV_125_13TeV_VBFDoubleHTag_0'%Y]
+    tthname = ['tth%s_13TeV_125_13TeV_VBFDoubleHTag_0'%Y]
     NodesNormalizationFile = '/afs/cern.ch/user/n/nchernya/public/Soumya/reweighting_normalization_26_11_2019.json'
     useMixOfNodes = False
     whichNodes = ['SM']
@@ -53,8 +53,8 @@ def main(options,args):
     status,files = commands.getstatusoutput('! ls $data | sort -t_ -k 3 -n')
     files=files.split('\n')   
     print files    
-    signal = [s for s in files if ("VBFHHTo2B2G_CV_1_C2V_1_C3_1" in s) ]
-    ggHH = [s for s in files if ("output_GluGluToHHTo2B2G_node_all_2016.root" in s) ]
+    #signal = [s for s in files if ("VBFHHTo2B2G_CV_1_C2V_1_C3_1" in s) ]
+    ggHH = [s for s in files if ("output_GluGluToHHTo2B2G_node_all_%s.root"%Y in s) ]
     diphotonJets = [s for s in files if "DiPhotonJetsBox_" in s]
     diphotonJets_1B = [s for s in files if "DiPhotonJetsBox1B" in s] # will use for limits
     diphotonJets_2B = [s for s in files if "DiPhotonJetsBox2B" in s] # will use for limits
@@ -65,9 +65,20 @@ def main(options,args):
     vh  = [s for s in files if "output_vh" in s]
     tth  = [s for s in files if "output_tth" in s]
 
-
-
-    utils.IO.add_signal(ntuples,signal,1,'tagsDumper/trees/%s'%VBFname[year],year)
+    couplings = 'CV_1_C2V_1_C3_1,CV_1_C2V_2_C3_1,CV_1_C2V_1_C3_2,CV_1_C2V_1_C3_0,CV_0_5_C2V_1_C3_1,CV_1_5_C2V_1_C3_1'.split(',') ### THE ORDER IS EXTREMELY IMPRORTANT, DO NOT CHANGE
+    signal = []
+    for coup in couplings :
+          signal.append('output_VBFHHTo2B2G_%s_TuneCP5_PSWeights_13TeV-madgraph-pythia8.root'%coup)
+    signal_name = 'vbfhh%s_13TeV_125_13TeV_VBFDoubleHTag_0'%Y
+    
+    utils.IO.reweightVBFHH = True
+    utils.IO.vbfhh_cv = [1.]  
+    utils.IO.vbfhh_c2v = [0.]
+    utils.IO.vbfhh_kl = [1.]
+    for sig in signal:
+        utils.IO.add_signal(ntuples,sig,1,'tagsDumper/trees/%s'%signal_name,year)
+   
+#    utils.IO.add_signal(ntuples,signal,1,'tagsDumper/trees/%s'%VBFname[year],year)
 
     utils.IO.use_signal_nodes(useMixOfNodes,whichNodes,ggHHMixOfNodesNormalizations)
     utils.IO.add_background(ntuples,ggHH,-1, 'tagsDumper/trees/%s'%SMname[year],year)
@@ -76,10 +87,10 @@ def main(options,args):
     utils.IO.add_background(ntuples,diphotonJets_2B,-2,'tagsDumper/trees/'+diphotonJets_2B[0][diphotonJets_2B[0].find('output_')+7:diphotonJets_2B[0].find('.root')].replace('-','_')+'_13TeV_VBFDoubleHTag_0',year)
     utils.IO.add_background(ntuples,gJets_lowPt,-2,'tagsDumper/trees/'+gJets_lowPt[0][gJets_lowPt[0].find('output_')+7:gJets_lowPt[0].find('.root')].replace('-','_')+'_13TeV_VBFDoubleHTag_0',year)    
     utils.IO.add_background(ntuples,gJets_highPt,-2,'tagsDumper/trees/'+gJets_highPt[0][gJets_highPt[0].find('output_')+7:gJets_highPt[0].find('.root')].replace('-','_')+'_13TeV_VBFDoubleHTag_0',year) 
-    utils.IO.add_background(ntuples,ggh,-3, 'tagsDumper/trees/%s'%gghname[year],year)    
-    utils.IO.add_background(ntuples,vh,-3, 'tagsDumper/trees/%s'%vhname[year],year)
-    utils.IO.add_background(ntuples,qqh,-3, 'tagsDumper/trees/%s'%qqhname[year],year)
-    utils.IO.add_background(ntuples,tth,-3, 'tagsDumper/trees/%s'%tthname[year],year)
+    #utils.IO.add_background(ntuples,ggh,-3, 'tagsDumper/trees/%s'%gghname[year],year)    
+    #utils.IO.add_background(ntuples,vh,-3, 'tagsDumper/trees/%s'%vhname[year],year)
+    #utils.IO.add_background(ntuples,qqh,-3, 'tagsDumper/trees/%s'%qqhname[year],year)
+    #utils.IO.add_background(ntuples,tth,-3, 'tagsDumper/trees/%s'%tthname[year],year)
 
 #    utils.IO.add_signal(ntuples,signal,1,'%s'%VBFname[year],year)
 
@@ -178,10 +189,11 @@ def main(options,args):
         info_file.write("proc %d : %.4f \n"%( utils.IO.bkgProc[bkg_type],bkg_weight)) 
     info_file.write("Background weighted Events Sum Total : %.4f \n"%(sum_bkg_weights)) 
     info_file.close()
-    diphoton_for_rho = ['output_DiPhotonJetsBox_MGG-80toInf_13TeV-Sherpa.root','output_DiPhotonJetsBox_MGG-80toInf_13TeV-Sherpa.root']
-    diphoton_frame2016=rpd.read_root(utils.IO.ldata+'/'+diphoton_for_rho[0],'tagsDumper/trees/DiPhotonJetsBox_MGG_80toInf_13TeV_Sherpa_13TeV_VBFDoubleHTag_0', columns = ['weight','rho'])
-    diphoton_frame2017=rpd.read_root('/eos/user/m/mukherje/HH_bbgg/2017_Sample/'+diphoton_for_rho[1],'tagsDumper/trees/DiPhotonJetsBox_MGG_80toInf_13TeV_Sherpa_13TeV_VBFDoubleHTag_0', columns = ['weight','rho'])
-
+    if '2016' in gghname[0] and doRhoReweight == True : 
+        diphoton_for_rho = ['output_DiPhotonJetsBox_MGG-80toInf_13TeV-Sherpa.root','output_DiPhotonJetsBox_MGG-80toInf_13TeV-Sherpa.root']
+        diphoton_frame2016=rpd.read_root(utils.IO.ldata+'/'+diphoton_for_rho[0],'tagsDumper/trees/DiPhotonJetsBox_MGG_80toInf_13TeV_Sherpa_13TeV_VBFDoubleHTag_0', columns = ['weight','rho'])
+        diphoton_frame2017=rpd.read_root('/eos/user/m/mukherje/HH_bbgg/2017_Sample/'+diphoton_for_rho[1],'tagsDumper/trees/DiPhotonJetsBox_MGG_80toInf_13TeV_Sherpa_13TeV_VBFDoubleHTag_0', columns = ['weight','rho'])
+        preprocessing.reweight_rho('rho',diphoton_frame2016,diphoton_frame2017,utils.IO.signal_df[0])
 
 
     if 'gg' in resolution_weighting : 
@@ -189,16 +201,16 @@ def main(options,args):
     if 'bb' in resolution_weighting : 
         preprocessing.weight_signal_with_resolution_all(branch='(sigmaMJets*1.4826)')
 
-    preprocessing.reweight_rho('rho',diphoton_frame2016,diphoton_frame2017,utils.IO.signal_df[0]) 
+    #preprocessing.reweight_rho('rho',diphoton_frame2016,diphoton_frame2017,utils.IO.signal_df[0]) 
     if doOverlapRemoval == True:    
         for i in range(utils.IO.nBkg):
             if 'DiPhotonJetsBox_MGG' in utils.IO.bkgTreeName[i] : preprocessing.cleanOverlapDiphotons(utils.IO.bkgTreeName[i],utils.IO.background_df[i])        
 
-    if (year==1 and doReweight == True):
-        preprocessing.reweight_gen_mhh('mhh',genFrame2016,genFrame2017,utils.IO.signal_df[0],'genMhh')
+    #if (year==1 and doReweight == True):
+    #    preprocessing.reweight_gen_mhh('mhh',genFrame2016,genFrame2017,utils.IO.signal_df[0],'genMhh')
 
-    if (year==2 and doReweight == True):
-        preprocessing.reweight_gen_mhh('mhh',genFrame2016,genFrame2018,utils.IO.signal_df[0],'genMhh')
+    #if (year==2 and doReweight == True):
+    #    preprocessing.reweight_gen_mhh('mhh',genFrame2016,genFrame2018,utils.IO.signal_df[0],'genMhh')
 
     X_bkg,y_bkg,weights_bkg,event_bkg,X_sig,y_sig,weights_sig,event_sig=preprocessing.set_variables(branch_names,use_event_num=True)
 
@@ -267,7 +279,7 @@ def main(options,args):
     _,_,_ = plt.hist(utils.IO.signal_df[0]['rho'], np.linspace(0,100,100), facecolor='b',weights=utils.IO.signal_df[0]['weight'], alpha=0.5,normed=False,label='2016')
     plt.xlabel('rho [GeV]')
     plt.ylabel('A.U.')
-    plt.savefig('rho_2016.png')
+    plt.savefig('%s_2016.png'%Y)
 
 
 
@@ -283,10 +295,10 @@ def main(options,args):
 
     roc_df_dipho = pd.DataFrame({"fpr_dipho": (fpr_dipho).tolist(),"tpr_dipho": (tpr_dipho).tolist()})
     roc_df_gJets = pd.DataFrame({"fpr_gJets": (fpr_gJets).tolist(),"tpr_gJets": (tpr_gJets).tolist()})
-    roc_df_singleH = pd.DataFrame({"fpr_singleH": (fpr_singleH).tolist(),"tpr_singleH": (tpr_singleH).tolist()})
+    #roc_df_singleH = pd.DataFrame({"fpr_singleH": (fpr_singleH).tolist(),"tpr_singleH": (tpr_singleH).tolist()})
     roc_df_dipho.to_hdf(utils.IO.plotFolder+"roc_curves_dipho_%s.h5"%outstr, key='df', mode='w')
     roc_df_gJets.to_hdf(utils.IO.plotFolder+"roc_curves_gJets_%s.h5"%outstr, key='df', mode='w')
-    roc_df_singleH.to_hdf(utils.IO.plotFolder+"roc_curves_singleH_%s.h5"%outstr, key='df', mode='w')
+    #roc_df_singleH.to_hdf(utils.IO.plotFolder+"roc_curves_singleH_%s.h5"%outstr, key='df', mode='w')
 
 
 
