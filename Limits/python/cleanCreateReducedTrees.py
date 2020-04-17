@@ -15,7 +15,8 @@ import root_pandas as rpd
 import json
 
 treeDir = 'tagsDumper/trees/'
-samples = ["VBFHHTo2B2G_CV_1_C2V_2_C3_1","VBFHHTo2B2G_CV_1_C2V_1_C3_1","GluGluToHHTo2B2G_node_all","ggh","vh","qqh","tth","DiPhotonJetsBox_","DiPhotonJetsBox2BJets_","DiPhotonJetsBox1BJet_","GJet_Pt-20to40","GJet_Pt-40toInf"]#
+#samples = ["VBFHHTo2B2G_CV_1_C2V_2_C3_1","VBFHHTo2B2G_CV_1_C2V_1_C3_1","GluGluToHHTo2B2G_node_all","ggh","vh","qqh","tth","DiPhotonJetsBox_","DiPhotonJetsBox2BJets_","DiPhotonJetsBox1BJet_","GJet_Pt-20to40","GJet_Pt-40toInf"]#
+samples = ["VBFHHTo2B2G_CV_1_C2V_1_C3_1","DiPhotonJetsBox_","GluGluToHHTo2B2G_node_all"]
 #samples = ["VBFHHTo2B2G_CV_1_C2V_2_C3_1","VBFHHTo2B2G_CV_1_C2V_1_C3_1","GluGluToHHTo2B2G_node_all","DiPhotonJetsBox_","DiPhotonJetsBox2BJets","DiPhotonJetsBox1BJet","GJet_Pt-20to40","GJet_Pt-40toInf","ggh","vh","qqh","tth"] #,"DiPhotonJetsBox2BJets","DiPhotonJetsBox1BJet","ttH","TTGJets","TTTo2L2Nu","TTGG_0Jets","GJet_Pt-20to40","GJet_Pt-40toInf"]#
 #samples = ["GluGluToHHTo2B2G_node_all","GJet_Pt-20to40","GJet_Pt-40toInf"]#
 #samples = ["GluGluToHHTo2B2G_node_all","DiPhotonJetsBox_","DiPhotonJetsBox2BJets","DiPhotonJetsBox1BJet","ttH","TTGJets","TTGG_0Jets"]#
@@ -27,9 +28,8 @@ cleanOverlap = True   # Do not forget to change it
 treeTag=""
 
 NodesNormalizationFile = '/afs/cern.ch/user/n/nchernya/public/Soumya/reweighting_normalization_26_11_2019.json'
-useMixOfNodes = False
+useMixOfNodes = True
 whichNodes = ['SM']  #used to create cumulative on SM only
-signalMixOfNodesNormalizations = json.loads(open(NodesNormalizationFile).read())
 
 #just a list of all nodes to add weight branches in the trees
 nodes_branches = list(np.arange(0,12,1))   #all nodes are used to train. 
@@ -57,13 +57,16 @@ def addSamples():#define here the samples you want to process
     if options.ldata is not "":
         print("loading files from: "+options.ldata)
         utils.IO.ldata=options.ldata
-   
+    ggHHMixOfNodesNormalizations = json.loads(open(NodesNormalizationFile).read())
+    utils.IO.use_signal_nodes(useMixOfNodes,whichNodes,ggHHMixOfNodesNormalizations) 
     files= os.listdir(utils.IO.ldata+ntuples)
 
     couplings = 'CV_1_C2V_1_C3_1,CV_1_C2V_2_C3_1,CV_1_C2V_1_C3_2,CV_1_C2V_1_C3_0,CV_0_5_C2V_1_C3_1,CV_1_5_C2V_1_C3_1'.split(',') ### THE ORDER IS EXTREMELY IMPRORTANT, DO NOT CHANGE
     signal = []
     for coup in couplings :
           signal.append('output_VBFHHTo2B2G_%s_TuneCP5_PSWeights_13TeV-madgraph-pythia8.root'%coup)
+    print ("The vbfhh samples are:")
+    print signal
     signal_name = 'vbfhh2018_13TeV_125_13TeV_VBFDoubleHTag_0'
     utils.IO.reweightVBFHH = True
     utils.IO.vbfhh_cv = [1.]
@@ -77,22 +80,21 @@ def addSamples():#define here the samples you want to process
 #        if "VBFHHTo2B2G_CV_1_C2V_2_C3_1" in iSample:
 #            utils.IO.add_signal(ntuples,process,1,treeDir+vbfhh_name+'_13TeV_VBFDoubleHTag_0',year)
 #        else :
-            print 'adding bkg with process num : ',process[0],"  ",-num
-            if ("GluGluToHHTo2B2G" in iSample) and (useMixOfNodes==False):
+            if "VBFHHTo2B2G" in iSample:
+               if utils.IO.reweightVBFHH==False:
+                          utils.IO.add_signal(ntuples,process,1,treeDir+vbfhh_name+'_13TeV_VBFDoubleHTag_0',year)
+               else :
+                          print 'signal samples are already added'
+            #print 'adding bkg with process num : ',process[0],"  ",-num
+            elif ("GluGluToHHTo2B2G" in iSample) and (useMixOfNodes==False):
               utils.IO.add_background(ntuples,process,-num,treeDir+gghhname+'_13TeV_VBFDoubleHTag_0',year)
               background_names.append(samples[num].replace('-','_'))
             elif ("GluGluToHHTo2B2G"in iSample) and (useMixOfNodes==True) :
-              utils.IO.use_signal_nodes(useMixOfNodes,whichNodes,signalMixOfNodesNormalizations)
-              utils.IO.add_background(ntuples,process,-num,treeDir+gghh+'_13TeV_VBFDoubleHTag_0',year)
+              utils.IO.use_signal_nodes(useMixOfNodes,whichNodes,ggHHMixOfNodesNormalizations)
+              utils.IO.add_background(ntuples,process,-num,treeDir+gghhname+'_13TeV_VBFDoubleHTag_0',year)
               background_names.append(samples[num].replace('-','_'))
             elif ("ggh" in iSample):
               utils.IO.add_background(ntuples,process,-num,treeDir+gghname+'_13TeV_VBFDoubleHTag_0',year)
-              background_names.append(samples[num].replace('-','_'))
-            elif ("VBFHHTo2B2G_CV_1_C2V_1_C3_1" in iSample):
-              utils.IO.add_background(ntuples,process,-num,treeDir+vbfhh_name+'_13TeV_VBFDoubleHTag_0',year)
-              background_names.append(samples[num].replace('-','_'))
-            elif ("VBFHHTo2B2G_CV_1_C2V_2_C3_1" in iSample):
-              utils.IO.add_background(ntuples,process,-num,treeDir+vbfhh_name+'_13TeV_VBFDoubleHTag_0',year)
               background_names.append(samples[num].replace('-','_'))
             elif ("vh" in iSample):
               utils.IO.add_background(ntuples,process,-num,treeDir+vhname+'_13TeV_VBFDoubleHTag_0',year)
@@ -196,7 +198,7 @@ def main(options,args):
     # no need to shuffle here, we just count events
     nodesWeightBranches=[]
     if utils.IO.signalMixOfNodes : nodesWeightBranches=[ 'benchmark_reweight_%s'%i for i in nodes_branches ] 
-    preprocessing.set_signals(branch_names+branch_cuts+event_branches+additionalCut_names+signal_trainedOn+nodesWeightBranches,False,cuts) 
+    preprocessing.set_signals(branch_names+branch_cuts+event_branches+additionalCut_names+signal_trainedOn,False,cuts) 
     preprocessing.set_backgrounds(branch_names+branch_cuts+event_branches+additionalCut_names+bkg_trainedOn,False,cuts) 
 
     #### Adding new deltaR (photon,jet) branches ####
@@ -304,30 +306,32 @@ def main(options,args):
 
  
 ###########################  signal  block starts  ################################################################
-    sig_count_df = utils.IO.signal_df[0]
-    preprocessing.define_process_weight(sig_count_df,utils.IO.sigProc[0],utils.IO.signalName[0],utils.IO.signalTreeName[0],cleanSignal=True,cleanOverlap=cleanOverlap)
+    for isig in range(0,len(utils.IO.signalName)):
+       sig_count_df = utils.IO.signal_df[isig]
+       print utils.IO.signalName[isig]
+       preprocessing.define_process_weight(sig_count_df,utils.IO.sigProc[isig],utils.IO.signalName[isig],utils.IO.signalTreeName[isig],cleanSignal=True,cleanOverlap=cleanOverlap)
 
  
     #nTot is a multidim vector with all additional variables, dictVar is a dictionary associating a name of the variable
     #to a position in the vector
-    nTot,dictVar = postprocessing.stackFeatures(sig_count_df,branch_names+additionalCut_names+signal_trainedOn+overlap+nodesWeightBranches)
+       nTot,dictVar = postprocessing.stackFeatures(sig_count_df,branch_names+additionalCut_names+signal_trainedOn+overlap)
     #apply isSignal cleaning
-    nCleaned = nTot[np.where(nTot[:,dictVar['weight']]!=0),:][0]
+       nCleaned = nTot[np.where(nTot[:,dictVar['weight']]!=0),:][0]
     
-    processPath=os.path.expanduser(options.outputFileDir)+outTag+'/'+utils.IO.signalName[0].split("/")[len(utils.IO.signalName[0].split("/"))-1].replace("output_","").replace(".root","")+"_preselection"+".root"
+       processPath=os.path.expanduser(options.outputFileDir)+outTag+'/'+utils.IO.signalName[isig].split("/")[len(utils.IO.signalName[isig].split("/"))-1].replace("output_","").replace(".root","")+"_preselection"+".root"
 
+
+       if not options.addHHTagger:
+            postprocessing.saveTree(processPath,dictVar,nCleaned,Y_pred_sig)
+       else:
+             postprocessing.saveTree(processPath,dictVar,nCleaned)        
+    
+       processPath=os.path.expanduser(options.outputFileDir)+outTag+'/'+utils.IO.signalName[isig].split("/")[len(utils.IO.signalName[isig].split("/"))-1].replace("output_","").replace(".root","")+"_preselection_diffNaming"+".root"
 
     if not options.addHHTagger:
-        postprocessing.saveTree(processPath,dictVar,nCleaned,Y_pred_sig)
-    else:
-        postprocessing.saveTree(processPath,dictVar,nCleaned)        
-    
-    processPath=os.path.expanduser(options.outputFileDir)+outTag+'/'+utils.IO.signalName[0].split("/")[len(utils.IO.signalName[0].split("/"))-1].replace("output_","").replace(".root","")+"_preselection_diffNaming"+".root"
-
-    if not options.addHHTagger:
-        postprocessing.saveTree(processPath,dictVar,nCleaned,Y_pred_sig,nameTree="reducedTree_sig%s"%treeTag)
+             postprocessing.saveTree(processPath,dictVar,nCleaned,Y_pred_sig,nameTree="reducedTree_sig%s"%treeTag)
     else:    
-        postprocessing.saveTree(processPath,dictVar,nCleaned,nameTree="reducedTree_sig%s"%treeTag)
+             postprocessing.saveTree(processPath,dictVar,nCleaned,nameTree="reducedTree_sig%s"%treeTag)
   
 ##########################  signal  block ends  ################################################################ 
     
