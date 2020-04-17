@@ -45,7 +45,7 @@ def main(options,args):
     qqhname = ['qqh%s_13TeV_125_13TeV_VBFDoubleHTag_0'%Y]
     tthname = ['tth%s_13TeV_125_13TeV_VBFDoubleHTag_0'%Y]
     NodesNormalizationFile = '/afs/cern.ch/user/n/nchernya/public/Soumya/reweighting_normalization_26_11_2019.json'
-    useMixOfNodes = False
+    useMixOfNodes = True
     whichNodes = ['SM']
     ggHHMixOfNodesNormalizations = json.loads(open(NodesNormalizationFile).read())
     # "%" sign allows to interpret the rest as a system command
@@ -81,12 +81,13 @@ def main(options,args):
 #    utils.IO.add_signal(ntuples,signal,1,'tagsDumper/trees/%s'%VBFname[year],year)
 
     utils.IO.use_signal_nodes(useMixOfNodes,whichNodes,ggHHMixOfNodesNormalizations)
-    utils.IO.add_background(ntuples,ggHH,-1, 'tagsDumper/trees/%s'%SMname[year],year)
-    utils.IO.add_background(ntuples,diphotonJets,-2,'tagsDumper/trees/'+diphotonJets[0][diphotonJets[0].find('output_')+7:diphotonJets[0].find('.root')].replace('-','_')+'_13TeV_VBFDoubleHTag_0',year)
-    utils.IO.add_background(ntuples,diphotonJets_1B,-2,'tagsDumper/trees/'+diphotonJets_1B[0][diphotonJets_1B[0].find('output_')+7:diphotonJets_1B[0].find('.root')].replace('-','_')+'_13TeV_VBFDoubleHTag_0',year)
-    utils.IO.add_background(ntuples,diphotonJets_2B,-2,'tagsDumper/trees/'+diphotonJets_2B[0][diphotonJets_2B[0].find('output_')+7:diphotonJets_2B[0].find('.root')].replace('-','_')+'_13TeV_VBFDoubleHTag_0',year)
-    utils.IO.add_background(ntuples,gJets_lowPt,-2,'tagsDumper/trees/'+gJets_lowPt[0][gJets_lowPt[0].find('output_')+7:gJets_lowPt[0].find('.root')].replace('-','_')+'_13TeV_VBFDoubleHTag_0',year)    
-    utils.IO.add_background(ntuples,gJets_highPt,-2,'tagsDumper/trees/'+gJets_highPt[0][gJets_highPt[0].find('output_')+7:gJets_highPt[0].find('.root')].replace('-','_')+'_13TeV_VBFDoubleHTag_0',year) 
+    #utils.IO.add_background(ntuples,ggHH,-1, 'tagsDumper/trees/%s'%SMname[year],year)
+    utils.IO.add_background(ntuples,diphotonJets,-1,'tagsDumper/trees/'+diphotonJets[0][diphotonJets[0].find('output_')+7:diphotonJets[0].find('.root')].replace('-','_')+'_13TeV_VBFDoubleHTag_0',year)
+    utils.IO.add_background(ntuples,diphotonJets_1B,-1,'tagsDumper/trees/'+diphotonJets_1B[0][diphotonJets_1B[0].find('output_')+7:diphotonJets_1B[0].find('.root')].replace('-','_')+'_13TeV_VBFDoubleHTag_0',year)
+    utils.IO.add_background(ntuples,diphotonJets_2B,-1,'tagsDumper/trees/'+diphotonJets_2B[0][diphotonJets_2B[0].find('output_')+7:diphotonJets_2B[0].find('.root')].replace('-','_')+'_13TeV_VBFDoubleHTag_0',year)
+    utils.IO.add_background(ntuples,gJets_lowPt,-1,'tagsDumper/trees/'+gJets_lowPt[0][gJets_lowPt[0].find('output_')+7:gJets_lowPt[0].find('.root')].replace('-','_')+'_13TeV_VBFDoubleHTag_0',year)    
+    utils.IO.add_background(ntuples,gJets_highPt,-1,'tagsDumper/trees/'+gJets_highPt[0][gJets_highPt[0].find('output_')+7:gJets_highPt[0].find('.root')].replace('-','_')+'_13TeV_VBFDoubleHTag_0',year) 
+    utils.IO.add_background(ntuples,ggHH,-2, 'tagsDumper/trees/%s'%SMname[year],year)
     #utils.IO.add_background(ntuples,ggh,-3, 'tagsDumper/trees/%s'%gghname[year],year)    
     #utils.IO.add_background(ntuples,vh,-3, 'tagsDumper/trees/%s'%vhname[year],year)
     #utils.IO.add_background(ntuples,qqh,-3, 'tagsDumper/trees/%s'%qqhname[year],year)
@@ -276,7 +277,10 @@ def main(options,args):
     plt.ylabel('A.U.')
     plt.savefig('%s_2016.png'%Y)
 
-
+    _,_,_ = plt.hist(utils.IO.background_df[0]['MX'], np.linspace(0,2500,25), facecolor='b',weights=utils.IO.background_df[5]['weight'], alpha=0.5,normed=False,label='2016')
+    plt.xlabel('MX [GeV]')
+    plt.ylabel('A.U.')
+    plt.savefig('MX_ggHH_reweightedSM.png') 
 
 
 
