@@ -206,11 +206,6 @@ def main(options,args):
         for i in range(utils.IO.nBkg):
             if 'DiPhotonJetsBox_MGG' in utils.IO.bkgTreeName[i] : preprocessing.cleanOverlapDiphotons(utils.IO.bkgTreeName[i],utils.IO.background_df[i])        
 
-    #if (year==1 and doReweight == True):
-    #    preprocessing.reweight_gen_mhh('mhh',genFrame2016,genFrame2017,utils.IO.signal_df[0],'genMhh')
-
-    #if (year==2 and doReweight == True):
-    #    preprocessing.reweight_gen_mhh('mhh',genFrame2016,genFrame2018,utils.IO.signal_df[0],'genMhh')
 
     X_bkg,y_bkg,weights_bkg,event_bkg,X_sig,y_sig,weights_sig,event_sig=preprocessing.set_variables(branch_names,use_event_num=True)
 
