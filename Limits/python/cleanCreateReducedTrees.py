@@ -16,8 +16,8 @@ import json
 
 treeDir = 'tagsDumper/trees/'
 #samples = ["VBFHHTo2B2G_CV_1_C2V_2_C3_1","VBFHHTo2B2G_CV_1_C2V_1_C3_1","GluGluToHHTo2B2G_node_all","ggh","vh","qqh","tth","DiPhotonJetsBox_","DiPhotonJetsBox2BJets_","DiPhotonJetsBox1BJet_","GJet_Pt-20to40","GJet_Pt-40toInf"]#
-#samples = ["DiPhotonJetsBox_","DiPhotonJetsBox1BJet_","DiPhotonJetsBox2BJets_","GJet_Pt-20to40","GJet_Pt-40toInf","GluGluToHHTo2B2G_node_all"]
-samples = ["ggh","vh","qqh","tth"]
+samples = ["DiPhotonJetsBox_","DiPhotonJetsBox1BJet_","DiPhotonJetsBox2BJets_","GJet_Pt-20to40","GJet_Pt-40toInf","GluGluToHHTo2B2G_node_all"]
+#samples = ["ggh","vh","qqh","tth"]
 #samples = ["DiPhotonJetsBox_","DiPhotonJetsBox2BJets_","DiPhotonJetsBox1BJet_","GJet_Pt-20to40","GJet_Pt-40toInf","ggh","vh","qqh","tth","GluGluToHHTo2B2G_node_all"]
 #samples = ["VBFHHTo2B2G_CV_1_C2V_2_C3_1","VBFHHTo2B2G_CV_1_C2V_1_C3_1","GluGluToHHTo2B2G_node_all","DiPhotonJetsBox_","DiPhotonJetsBox2BJets","DiPhotonJetsBox1BJet","GJet_Pt-20to40","GJet_Pt-40toInf","ggh","vh","qqh","tth"] #,"DiPhotonJetsBox2BJets","DiPhotonJetsBox1BJet","ttH","TTGJets","TTTo2L2Nu","TTGG_0Jets","GJet_Pt-20to40","GJet_Pt-40toInf"]#
 #samples = ["GluGluToHHTo2B2G_node_all","GJet_Pt-20to40","GJet_Pt-40toInf"]#
@@ -28,17 +28,17 @@ background_names = []
 cleanOverlap = True   # Do not forget to change it 
 #treeTag="_2017"
 treeTag=""
-
 NodesNormalizationFile = '/afs/cern.ch/user/n/nchernya/public/Soumya/reweighting_normalization_26_11_2019.json'
 useMixOfNodes = True
 whichNodes = ['SM']  #used to create cumulative on SM only
+doRhoReweight = True
 
 #just a list of all nodes to add weight branches in the trees
 nodes_branches = list(np.arange(0,12,1))   #all nodes are used to train. 
 nodes_branches.append('SM')
 nodes_branches.append('box')
 background_names = []
-vhname = "vh2016_13TeV_125"
+#vhname = "vh2016_13TeV_125"
 def addSamples():#define here the samples you want to process
     ntuples = options.ntup
     year = options.year
@@ -205,6 +205,16 @@ def main(options,args):
     preprocessing.set_signals(branch_names+branch_cuts+event_branches+additionalCut_names+signal_trainedOn,False,cuts) 
     preprocessing.set_backgrounds(branch_names+branch_cuts+event_branches+additionalCut_names+bkg_trainedOn,False,cuts) 
 
+
+    ##just do it only for 2016 after that I will put any flag only....
+    if doRhoReweight == True :
+        print "working for the rho reweighting"
+        diphoton_for_rho = ['output_DiPhotonJetsBox_MGG-80toInf_13TeV-Sherpa.root','output_DiPhotonJetsBox_MGG-80toInf_13TeV-Sherpa.root']
+        diphoton_frame2016=rpd.read_root(utils.IO.ldata+'/'+diphoton_for_rho[0],'tagsDumper/trees/DiPhotonJetsBox_MGG_80toInf_13TeV_Sherpa_13TeV_VBFDoubleHTag_0', columns = ['weight','rho'])
+        diphoton_frame2017=rpd.read_root('/eos/user/m/mukherje/HH_bbgg/2017_Sample/'+diphoton_for_rho[1],'tagsDumper/trees/DiPhotonJetsBox_MGG_80toInf_13TeV_Sherpa_13TeV_VBFDoubleHTag_0', columns = ['weight','rho'])
+        preprocessing.reweight_rho('rho',diphoton_frame2016,diphoton_frame2017,utils.IO.signal_df[0])
+
+
     #### Adding new deltaR (photon,jet) branches ####
   #  for i in range(utils.IO.nBkg):
   #     preprocessing.add_deltaR_branches(utils.IO.background_df[i])
@@ -231,11 +241,11 @@ def main(options,args):
     #data_branches = 'weight,leadingJet_DeepFlavour,subleadingJet_DeepFlavour, VBFleadJet_QGL, VBFsubleadJet_QGL,absCosThetaStar_CS,absCosTheta_bb,absCosTheta_gg,diphotonCandidatePtOverdiHiggsM,dijetCandidatePtOverdiHiggsM,customLeadingPhotonIDMVA,customSubLeadingPhotonIDMVA,leadingPhotonSigOverE,subleadingPhotonSigOverE,sigmaMOverM,noexpand:(leadingPhoton_pt/CMS_hgg_mass),noexpand:(subleadingPhoton_pt/CMS_hgg_mass),noexpand:(leadingJet_pt/Mjj),noexpand:(subleadingJet_pt/Mjj),rho,noexpand:(leadingJet_bRegNNResolution*1.4826),noexpand:(subleadingJet_bRegNNResolution*1.4826),noexpand:(sigmaMJets*1.4826),PhoJetMinDr,PhoJetOtherDr,VBFleadJet_pt,VBFleadJet_eta,VBFsubleadJet_pt,VBFsubleadJet_eta,VBFCentrality_jg,VBFCentrality_jb,VBFDeltaR_jg,VBFDeltaR_jb,VBFProd_eta,VBFDelta_phi,VBFJet_mjj,VBFJet_Delta_eta'.split(",")
 
 
-    if '2016' in vhname[0] and doRhoReweight == True :
-        diphoton_for_rho = ['output_DiPhotonJetsBox_MGG-80toInf_13TeV-Sherpa.root','output_DiPhotonJetsBox_MGG-80toInf_13TeV-Sherpa.root']
-        diphoton_frame2016=rpd.read_root(utils.IO.ldata+'/'+diphoton_for_rho[0],'tagsDumper/trees/DiPhotonJetsBox_MGG_80toInf_13TeV_Sherpa_13TeV_VBFDoubleHTag_0', columns = ['weight','rho'])
-        diphoton_frame2017=rpd.read_root('/eos/user/m/mukherje/HH_bbgg/2017_Sample/'+diphoton_for_rho[1],'tagsDumper/trees/DiPhotonJetsBox_MGG_80toInf_13TeV_Sherpa_13TeV_VBFDoubleHTag_0', columns = ['weight','rho'])
-        preprocessing.reweight_rho('rho',diphoton_frame2016,diphoton_frame2017,utils.IO.signal_df[0])
+#    if '2016' in vhname[0] and doRhoReweight == True :
+#        diphoton_for_rho = ['output_DiPhotonJetsBox_MGG-80toInf_13TeV-Sherpa.root','output_DiPhotonJetsBox_MGG-80toInf_13TeV-Sherpa.root']
+#        diphoton_frame2016=rpd.read_root(utils.IO.ldata+'/'+diphoton_for_rho[0],'tagsDumper/trees/DiPhotonJetsBox_MGG_80toInf_13TeV_Sherpa_13TeV_VBFDoubleHTag_0', columns = ['weight','rho'])
+#        diphoton_frame2017=rpd.read_root('/eos/user/m/mukherje/HH_bbgg/2017_Sample/'+diphoton_for_rho[1],'tagsDumper/trees/DiPhotonJetsBox_MGG_80toInf_13TeV_Sherpa_13TeV_VBFDoubleHTag_0', columns = ['weight','rho'])
+#        preprocessing.reweight_rho('rho',diphoton_frame2016,diphoton_frame2017,utils.IO.signal_df[0])
     
     if options.addData:
         #preprocessing.set_data(branch_names+branch_cuts+event_branches,cuts)
@@ -320,7 +330,7 @@ def main(options,args):
        sig_count_df = utils.IO.signal_df[0]
        print utils.IO.signalName[0]
        preprocessing.define_process_weight(sig_count_df,utils.IO.sigProc[0],utils.IO.signalName[0],utils.IO.signalTreeName[0],cleanSignal=True,cleanOverlap=cleanOverlap)
-
+       #print utils.IO.signal_df[0]['rho']
  
     #nTot is a multidim vector with all additional variables, dictVar is a dictionary associating a name of the variable
     #to a position in the vector
@@ -341,7 +351,7 @@ def main(options,args):
              postprocessing.saveTree(processPath,dictVar,nCleaned,Y_pred_sig,nameTree="reducedTree_sig%s"%treeTag)
        else:    
              postprocessing.saveTree(processPath,dictVar,nCleaned,nameTree="reducedTree_sig%s"%treeTag)
-  
+       print utils.IO.signal_df[0]['rho']
 ##########################  signal  block ends  ################################################################ 
     
     for iProcess in range(0,len(utils.IO.backgroundName)):
@@ -438,7 +448,7 @@ if __name__ == "__main__":
                         help="decide if you want to process or not data",
                         ),
             make_option("-f","--outputFileDir",
-                        action="store",type="string",dest="outputFileDir",default="/afs/cern.ch/work/m/mukherje/Training_VBFHH/HHbbgg_ETH/Training/2016_C2V0/",
+                        action="store",type="string",dest="outputFileDir",default="/afs/cern.ch/work/m/mukherje/Training_VBFHH/HHbbgg_ETH/Training/2016_C2V0_new/",
                         help="directory where to save output trees",
                         ),
             ]
