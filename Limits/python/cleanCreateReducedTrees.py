@@ -16,7 +16,9 @@ import json
 
 treeDir = 'tagsDumper/trees/'
 #samples = ["VBFHHTo2B2G_CV_1_C2V_2_C3_1","VBFHHTo2B2G_CV_1_C2V_1_C3_1","GluGluToHHTo2B2G_node_all","ggh","vh","qqh","tth","DiPhotonJetsBox_","DiPhotonJetsBox2BJets_","DiPhotonJetsBox1BJet_","GJet_Pt-20to40","GJet_Pt-40toInf"]#
-samples = ["VBFHHTo2B2G_CV_1_C2V_1_C3_1","DiPhotonJetsBox_","GluGluToHHTo2B2G_node_all"]
+#samples = ["DiPhotonJetsBox_","DiPhotonJetsBox1BJet_","DiPhotonJetsBox2BJets_","GJet_Pt-20to40","GJet_Pt-40toInf","GluGluToHHTo2B2G_node_all"]
+samples = ["ggh","vh","qqh","tth"]
+#samples = ["DiPhotonJetsBox_","DiPhotonJetsBox2BJets_","DiPhotonJetsBox1BJet_","GJet_Pt-20to40","GJet_Pt-40toInf","ggh","vh","qqh","tth","GluGluToHHTo2B2G_node_all"]
 #samples = ["VBFHHTo2B2G_CV_1_C2V_2_C3_1","VBFHHTo2B2G_CV_1_C2V_1_C3_1","GluGluToHHTo2B2G_node_all","DiPhotonJetsBox_","DiPhotonJetsBox2BJets","DiPhotonJetsBox1BJet","GJet_Pt-20to40","GJet_Pt-40toInf","ggh","vh","qqh","tth"] #,"DiPhotonJetsBox2BJets","DiPhotonJetsBox1BJet","ttH","TTGJets","TTTo2L2Nu","TTGG_0Jets","GJet_Pt-20to40","GJet_Pt-40toInf"]#
 #samples = ["GluGluToHHTo2B2G_node_all","GJet_Pt-20to40","GJet_Pt-40toInf"]#
 #samples = ["GluGluToHHTo2B2G_node_all","DiPhotonJetsBox_","DiPhotonJetsBox2BJets","DiPhotonJetsBox1BJet","ttH","TTGJets","TTGG_0Jets"]#
@@ -36,7 +38,7 @@ nodes_branches = list(np.arange(0,12,1))   #all nodes are used to train.
 nodes_branches.append('SM')
 nodes_branches.append('box')
 background_names = []
-
+vhname = "vh2016_13TeV_125"
 def addSamples():#define here the samples you want to process
     ntuples = options.ntup
     year = options.year
@@ -47,13 +49,13 @@ def addSamples():#define here the samples you want to process
       year_str='2017'
     elif year==2:
       year_str='2018'
-    gghhname="hh2018_13TeV_125"
-    vbfhh_name="vbfhh2018_13TeV_125"
-    gghname = "ggh2018_13TeV_125"
-    #gghname = "GluGluHToGG_M125_13TeV_amcatnloFXFX_pythia8"
-    vhname =  "vh2018_13TeV_125"
-    qqhname = "qqh2018_13TeV_125"
-    tthname = "tth2018_13TeV_125"
+    gghhname="hh2016_13TeV_125"
+    vbfhh_name="vbfhh2017_13TeV_125"
+    #gghname = "ggh2016_13TeV_125"
+    gghname = "GluGluHToGG_M125_13TeV_amcatnloFXFX_pythia8"
+    vhname =  "vh2016_13TeV_125"
+    qqhname = "qqh2016_13TeV_125"
+    tthname = "tth2016_13TeV_125"
     if options.ldata is not "":
         print("loading files from: "+options.ldata)
         utils.IO.ldata=options.ldata
@@ -64,10 +66,11 @@ def addSamples():#define here the samples you want to process
     couplings = 'CV_1_C2V_1_C3_1,CV_1_C2V_2_C3_1,CV_1_C2V_1_C3_2,CV_1_C2V_1_C3_0,CV_0_5_C2V_1_C3_1,CV_1_5_C2V_1_C3_1'.split(',') ### THE ORDER IS EXTREMELY IMPRORTANT, DO NOT CHANGE
     signal = []
     for coup in couplings :
-          signal.append('output_VBFHHTo2B2G_%s_TuneCP5_PSWeights_13TeV-madgraph-pythia8.root'%coup)
+          signal.append('output_VBFHHTo2B2G_%s_13TeV-madgraph.root'%coup)
+          #signal.append('output_VBFHHTo2B2G_%s_TuneCP5_PSWeights_13TeV-madgraph-pythia8.root'%coup)
     print ("The vbfhh samples are:")
     print signal
-    signal_name = 'vbfhh2018_13TeV_125_13TeV_VBFDoubleHTag_0'
+    signal_name = 'vbfhh2017_13TeV_125_13TeV_VBFDoubleHTag_0'
     utils.IO.reweightVBFHH = True
     utils.IO.vbfhh_cv = [1.]
     utils.IO.vbfhh_c2v = [0.]
@@ -154,8 +157,8 @@ def main(options,args):
     addSamples()
     
    # branch_names = 'leadingJet_DeepFlavour,subleadingJet_DeepFlavour,absCosThetaStar_CS,absCosTheta_bb,absCosTheta_gg,diphotonCandidatePtOverdiHiggsM,dijetCandidatePtOverdiHiggsM,customLeadingPhotonIDMVA,customSubLeadingPhotonIDMVA,leadingPhotonSigOverE,subleadingPhotonSigOverE,sigmaMOverM,noexpand:(leadingPhoton_pt/CMS_hgg_mass),noexpand:(subleadingPhoton_pt/CMS_hgg_mass),noexpand:(leadingJet_pt/Mjj),noexpand:(subleadingJet_pt/Mjj),rho,noexpand:(leadingJet_bRegNNResolution*1.4826),noexpand:(subleadingJet_bRegNNResolution*1.4826),noexpand:(sigmaMJets*1.4826),PhoJetMinDr,PhoJetOtherDr,noexpand:(VBFleadJet_pt/VBFJet_mjj),VBFleadJet_eta,noexpand:(VBFsubleadJet_pt/VBFJet_mjj),VBFsubleadJet_eta,VBFCentrality_jg,VBFCentrality_jb,VBFDeltaR_jg,VBFDeltaR_jb,VBFProd_eta,VBFJet_mjj,VBFJet_Delta_eta,VBFleadJet_QGL,VBFsubleadJet_QGL,diHiggs_pt,MX'.split(",")
-    #branch_names = 'leadingJet_DeepFlavour,subleadingJet_DeepFlavour,absCosThetaStar_CS,absCosTheta_bb,absCosTheta_gg,diphotonCandidatePtOverdiHiggsM,dijetCandidatePtOverdiHiggsM,customLeadingPhotonIDMVA,customSubLeadingPhotonIDMVA,leadingPhotonSigOverE,subleadingPhotonSigOverE,sigmaMOverM,noexpand:(leadingPhoton_pt/CMS_hgg_mass),noexpand:(subleadingPhoton_pt/CMS_hgg_mass),noexpand:(leadingJet_pt/Mjj),noexpand:(subleadingJet_pt/Mjj),rho,noexpand:(leadingJet_bRegNNResolution*1.4826),noexpand:(subleadingJet_bRegNNResolution*1.4826),noexpand:(sigmaMJets*1.4826),PhoJetMinDr,PhoJetOtherDr,noexpand:(VBFleadJet_pt/VBFJet_mjj),VBFleadJet_eta,noexpand:(VBFsubleadJet_pt/VBFJet_mjj),VBFsubleadJet_eta,VBFCentrality_jg,VBFCentrality_jb,VBFDeltaR_jg,VBFDeltaR_jb,VBFProd_eta,VBFJet_mjj,VBFJet_Delta_eta,VBFleadJet_QGL,VBFsubleadJet_QGL,diHiggs_pt,MX'.split(",")
-    branch_names = 'leadingJet_DeepFlavour,subleadingJet_DeepFlavour,absCosThetaStar_CS,absCosTheta_bb,absCosTheta_gg,diphotonCandidatePtOverdiHiggsM,dijetCandidatePtOverdiHiggsM,customLeadingPhotonIDMVA,customSubLeadingPhotonIDMVA,leadingPhotonSigOverE,subleadingPhotonSigOverE,sigmaMOverM,noexpand:(leadingPhoton_pt/CMS_hgg_mass),noexpand:(subleadingPhoton_pt/CMS_hgg_mass),noexpand:(leadingJet_pt/Mjj),noexpand:(subleadingJet_pt/Mjj),rho,noexpand:(leadingJet_bRegNNResolution*1.4826),noexpand:(subleadingJet_bRegNNResolution*1.4826),noexpand:(sigmaMJets*1.4826),PhoJetMinDr,PhoJetOtherDr,noexpand:(VBFleadJet_pt/VBFJet_mjj),VBFleadJet_eta,noexpand:(VBFsubleadJet_pt/VBFJet_mjj),VBFsubleadJet_eta,VBFCentrality_jg,VBFCentrality_jb,VBFDeltaR_jg,VBFDeltaR_jb,VBFProd_eta,VBFJet_mjj,VBFJet_Delta_eta,VBFleadJet_QGL,VBFsubleadJet_QGL,diHiggs_pt,MX,VBF_angleHH,VBF_dRHH,VBF_etaHH'.split(",")
+    branch_names = 'leadingJet_DeepFlavour,subleadingJet_DeepFlavour,absCosThetaStar_CS,absCosTheta_bb,absCosTheta_gg,diphotonCandidatePtOverdiHiggsM,dijetCandidatePtOverdiHiggsM,customLeadingPhotonIDMVA,customSubLeadingPhotonIDMVA,leadingPhotonSigOverE,subleadingPhotonSigOverE,sigmaMOverM,noexpand:(leadingPhoton_pt/CMS_hgg_mass),noexpand:(subleadingPhoton_pt/CMS_hgg_mass),noexpand:(leadingJet_pt/Mjj),noexpand:(subleadingJet_pt/Mjj),rho,noexpand:(leadingJet_bRegNNResolution*1.4826),noexpand:(subleadingJet_bRegNNResolution*1.4826),noexpand:(sigmaMJets*1.4826),PhoJetMinDr,PhoJetOtherDr,noexpand:(VBFleadJet_pt/VBFJet_mjj),VBFleadJet_eta,noexpand:(VBFsubleadJet_pt/VBFJet_mjj),VBFsubleadJet_eta,VBFCentrality_jg,VBFCentrality_jb,VBFDeltaR_jg,VBFDeltaR_jb,VBFProd_eta,VBFJet_mjj,VBFJet_Delta_eta,VBFleadJet_QGL,VBFsubleadJet_QGL,diHiggs_pt,MX'.split(",")
+    #branch_names = 'leadingJet_DeepFlavour,subleadingJet_DeepFlavour,absCosThetaStar_CS,absCosTheta_bb,absCosTheta_gg,diphotonCandidatePtOverdiHiggsM,dijetCandidatePtOverdiHiggsM,customLeadingPhotonIDMVA,customSubLeadingPhotonIDMVA,leadingPhotonSigOverE,subleadingPhotonSigOverE,sigmaMOverM,noexpand:(leadingPhoton_pt/CMS_hgg_mass),noexpand:(subleadingPhoton_pt/CMS_hgg_mass),noexpand:(leadingJet_pt/Mjj),noexpand:(subleadingJet_pt/Mjj),rho,noexpand:(leadingJet_bRegNNResolution*1.4826),noexpand:(subleadingJet_bRegNNResolution*1.4826),noexpand:(sigmaMJets*1.4826),PhoJetMinDr,PhoJetOtherDr,noexpand:(VBFleadJet_pt/VBFJet_mjj),VBFleadJet_eta,noexpand:(VBFsubleadJet_pt/VBFJet_mjj),VBFsubleadJet_eta,VBFCentrality_jg,VBFCentrality_jb,VBFDeltaR_jg,VBFDeltaR_jb,VBFProd_eta,VBFJet_mjj,VBFJet_Delta_eta,VBFleadJet_QGL,VBFsubleadJet_QGL,diHiggs_pt,MX,VBF_angleHH,VBF_dRHH,VBF_etaHH'.split(",")
 #    branch_names = 'leadingJet_DeepFlavour,subleadingJet_DeepFlavour,absCosThetaStar_CS,absCosTheta_bb,absCosTheta_gg,diphotonCandidatePtOverdiHiggsM,dijetCandidatePtOverdiHiggsM,customLeadingPhotonIDMVA,customSubLeadingPhotonIDMVA,leadingPhotonSigOverE,subleadingPhotonSigOverE,sigmaMOverM,noexpand:(leadingPhoton_pt/CMS_hgg_mass),noexpand:(subleadingPhoton_pt/CMS_hgg_mass),noexpand:(leadingJet_pt/Mjj),noexpand:(subleadingJet_pt/Mjj),rho,noexpand:(leadingJet_bRegNNResolution*1.4826),noexpand:(subleadingJet_bRegNNResolution*1.4826),noexpand:(sigmaMJets*1.4826),PhoJetMinDr,PhoJetOtherDr,noexpand:(VBFleadJet_pt/VBFJet_mjj),VBFleadJet_eta,noexpand:(VBFsubleadJet_pt/VBFJet_mjj),VBFsubleadJet_eta,VBFCentrality_jg,VBFCentrality_jb,VBFDeltaR_jg,VBFDeltaR_jb,VBFProd_eta,VBFJet_mjj,VBFJet_Delta_eta,VBFleadJet_QGL,VBFDelta_phi,VBFsubleadJet_QGL,VBF_angleHH,VBF_dRHH,VBF_etaHH'.split(",")
     additionalCut_names = 'CMS_hgg_mass,Mjj,MX,ttHScore,btagReshapeWeight,VBFleadJet_PUID,VBFsubleadJet_PUID'.split(',')
  #   additionalCut_names = 'CMS_hgg_mass,Mjj,MX'.split(',')
@@ -180,7 +183,7 @@ def main(options,args):
  #   cuts = 'leadingJet_pt>20 & subleadingJet_pt> 20 & (leadingJet_pt/leadingJet_bRegNNCorr>20) & (subleadingJet_pt/subleadingJet_bRegNNCorr>20) '
     #cuts = 'VBFleadJet_eta < 4.7 & VBFsubleadJet_eta < 4.7 & VBFleadJet_pt > 40'
     #cuts = 'VBFsubleadJet_eta < 4.7'
-    cuts = 'leadingJet_pt>0 '
+    cuts = 'ttHScore > 0.26'
 
 
     #if not options.addData:
@@ -227,6 +230,12 @@ def main(options,args):
     data_branches = ["weight"]
     #data_branches = 'weight,leadingJet_DeepFlavour,subleadingJet_DeepFlavour, VBFleadJet_QGL, VBFsubleadJet_QGL,absCosThetaStar_CS,absCosTheta_bb,absCosTheta_gg,diphotonCandidatePtOverdiHiggsM,dijetCandidatePtOverdiHiggsM,customLeadingPhotonIDMVA,customSubLeadingPhotonIDMVA,leadingPhotonSigOverE,subleadingPhotonSigOverE,sigmaMOverM,noexpand:(leadingPhoton_pt/CMS_hgg_mass),noexpand:(subleadingPhoton_pt/CMS_hgg_mass),noexpand:(leadingJet_pt/Mjj),noexpand:(subleadingJet_pt/Mjj),rho,noexpand:(leadingJet_bRegNNResolution*1.4826),noexpand:(subleadingJet_bRegNNResolution*1.4826),noexpand:(sigmaMJets*1.4826),PhoJetMinDr,PhoJetOtherDr,VBFleadJet_pt,VBFleadJet_eta,VBFsubleadJet_pt,VBFsubleadJet_eta,VBFCentrality_jg,VBFCentrality_jb,VBFDeltaR_jg,VBFDeltaR_jb,VBFProd_eta,VBFDelta_phi,VBFJet_mjj,VBFJet_Delta_eta'.split(",")
 
+
+    if '2016' in vhname[0] and doRhoReweight == True :
+        diphoton_for_rho = ['output_DiPhotonJetsBox_MGG-80toInf_13TeV-Sherpa.root','output_DiPhotonJetsBox_MGG-80toInf_13TeV-Sherpa.root']
+        diphoton_frame2016=rpd.read_root(utils.IO.ldata+'/'+diphoton_for_rho[0],'tagsDumper/trees/DiPhotonJetsBox_MGG_80toInf_13TeV_Sherpa_13TeV_VBFDoubleHTag_0', columns = ['weight','rho'])
+        diphoton_frame2017=rpd.read_root('/eos/user/m/mukherje/HH_bbgg/2017_Sample/'+diphoton_for_rho[1],'tagsDumper/trees/DiPhotonJetsBox_MGG_80toInf_13TeV_Sherpa_13TeV_VBFDoubleHTag_0', columns = ['weight','rho'])
+        preprocessing.reweight_rho('rho',diphoton_frame2016,diphoton_frame2017,utils.IO.signal_df[0])
     
     if options.addData:
         #preprocessing.set_data(branch_names+branch_cuts+event_branches,cuts)
@@ -396,7 +405,7 @@ if __name__ == "__main__":
                         ),
             make_option("-t","--training",
                         action="store", type="string",dest="trainingVersion",
-                        default="training_with_2018_test_C2V0_training",
+                        default="training_with_2016_test_C2V0_training",
                         help="MVA version to apply",
                         ),
             make_option("-x","--trainingDir",
@@ -429,7 +438,7 @@ if __name__ == "__main__":
                         help="decide if you want to process or not data",
                         ),
             make_option("-f","--outputFileDir",
-                        action="store",type="string",dest="outputFileDir",default="/afs/cern.ch/work/m/mukherje/Training_VBFHH/HHbbgg_ETH/Training/2018_C2V0/",
+                        action="store",type="string",dest="outputFileDir",default="/afs/cern.ch/work/m/mukherje/Training_VBFHH/HHbbgg_ETH/Training/2016_C2V0/",
                         help="directory where to save output trees",
                         ),
             ]
