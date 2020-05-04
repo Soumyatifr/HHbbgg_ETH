@@ -16,8 +16,9 @@ import json
 
 treeDir = 'tagsDumper/trees/'
 #samples = ["VBFHHTo2B2G_CV_1_C2V_2_C3_1","VBFHHTo2B2G_CV_1_C2V_1_C3_1","GluGluToHHTo2B2G_node_all","ggh","vh","qqh","tth","DiPhotonJetsBox_","DiPhotonJetsBox2BJets_","DiPhotonJetsBox1BJet_","GJet_Pt-20to40","GJet_Pt-40toInf"]#
-#samples = ["VBFHHTo2B2G_CV_1_C2V_0_C3_1","DiPhotonJetsBox_","DiPhotonJetsBox1BJet_","tth","DiPhotonJetsBox2BJets_","GJet_Pt-20to40","GJet_Pt-40toInf","hh_LO"]
-samples = ["VBFHHTo2B2G_CV_1_C2V_0_C3_1","hh_LO"]
+samples = ["VBFHHTo2B2G_CV_1_C2V_0_C3_1","GJet_Pt-20to40","GJet_Pt-40toInf","hh_LO"]
+#sample = ["DiPhotonJetsBox_","DiPhotonJetsBox1BJet_","DiPhotonJetsBox2BJets_"]
+#samples = ["VBFHHTo2B2G_CV_1_C2V_0_C3_1","hh_LO"]
 #samples = ["ggh","vh","qqh","tth"]
 background_names = []
 #samples = ["VBFHHTo2B2G_CV_1_C2V_1_C3_1","DiPhotonJetsBox_", "DiPhotonJetsBox2BJets"]#
@@ -176,8 +177,8 @@ def main(options,args):
  #   cuts = 'leadingJet_pt>20 & subleadingJet_pt> 20 & (leadingJet_pt/leadingJet_bRegNNCorr>20) & (subleadingJet_pt/subleadingJet_bRegNNCorr>20) '
     #cuts = 'VBFleadJet_eta < 4.7 & VBFsubleadJet_eta < 4.7 & VBFleadJet_pt > 40'
     #cuts = 'VBFsubleadJet_eta < 4.7'
-    cuts = 'ttHScore > 0.26 & MX > 500'
-    
+    #cuts = 'ttHScore > 0.26 & MX > 500'
+    cuts = 'MX > 500'
 
     #if not options.addData:
     #   cuts = 'leadingJet_pt>0 '
@@ -203,13 +204,13 @@ def main(options,args):
         diphoton_frame2016=rpd.read_root(utils.IO.ldata+'/'+diphoton_for_rho[0],'tagsDumper/trees/DiPhotonJetsBox_MGG_80toInf_13TeV_Sherpa_13TeV_VBFDoubleHTag_0', columns = ['weight','rho'])
         diphoton_frame2017=rpd.read_root('/eos/user/m/mukherje/HH_bbgg/2017_Sample/'+diphoton_for_rho[1],'tagsDumper/trees/DiPhotonJetsBox_MGG_80toInf_13TeV_Sherpa_13TeV_VBFDoubleHTag_0', columns = ['weight','rho'])
         preprocessing.reweight_rho('rho',diphoton_frame2016,diphoton_frame2017,utils.IO.signal_df[0])
-
-    for bkg_type in range(utils.IO.nBkg):
-        if utils.IO.bkgProc[bkg_type] == -2 : #ggHH : 
-           df_ggHH_NLO = (rpd.read_root('/eos/user/m/mukherje/HH_bbgg/Ntuples_30_04_2020/2016_NtuplesII/output_hh_nlo_kl_1_kt_1_2016.root','tagsDumper/trees/hh%s_13TeV_125_13TeV_VBFDoubleHTag_0'%Y, columns = ['weight','diHiggs_pt','PhoJetMinDr','genweight'])).query('genweight<0.1')
-           print utils.IO.bkgProc[bkg_type]
-           preprocessing.reweight_NLO_LO('diHiggs_pt',df_ggHH_NLO,utils.IO.background_df[bkg_type],np.linspace(0,600,100))
-           preprocessing.reweight_NLO_LO('PhoJetMinDr',df_ggHH_NLO,utils.IO.background_df[bkg_type],np.linspace(0,3,100))
+ 
+    for i in range(utils.IO.nBkg):
+        if "hh_LO" in utils.IO.backgroundName[i] : #ggHH : 
+           df_ggHH_NLO = (rpd.read_root('/eos/user/m/mukherje/HH_bbgg/Ntuples_30_04_2020/2016_NtuplesII/output_hh_nlo_kl_1_kt_1_2016.root','tagsDumper/trees/hh2016_13TeV_125_13TeV_VBFDoubleHTag_0', columns = ['weight','diHiggs_pt','PhoJetMinDr','genweight'])).query('genweight<0.1')
+           print utils.IO.backgroundName[i]
+           preprocessing.reweight_NLO_LO('diHiggs_pt',df_ggHH_NLO,utils.IO.background_df[i],np.linspace(0,600,100))
+           preprocessing.reweight_NLO_LO('PhoJetMinDr',df_ggHH_NLO,utils.IO.background_df[i],np.linspace(0,3,100))
 
 
     _,_,_ = plt.hist(utils.IO.signal_df[0]['rho'], np.linspace(0,100,100), facecolor='b',weights=utils.IO.signal_df[0]['weight'], alpha=0.5,normed=False,label='2016')
@@ -416,11 +417,11 @@ if __name__ == "__main__":
                         ),
             make_option("-t","--training",
                         action="store", type="string",dest="trainingVersion",
-                        default="training_with_2016_MX_gt_500_ttHkiller_0p26",
+                        default="training_with_2016_MX_gt_500_ttHkiller_0",
                         help="MVA version to apply",
                         ),
             make_option("-x","--trainingDir",
-                        action="store",type="string",dest="trainingDir",default="/afs/cern.ch/work/m/mukherje/Training_VBFHH/HHbbgg_ETH/Training/output_files/",
+                        action="store",type="string",dest="trainingDir",default="/eos/user/m/mukherje/HH_bbgg/Training_Ntuple/",
                         help="directory from where to load pklfile",
                         ),
             make_option("-o", "--out",
@@ -449,7 +450,7 @@ if __name__ == "__main__":
                         help="decide if you want to process or not data",
                         ),
             make_option("-f","--outputFileDir",
-                        action="store",type="string",dest="outputFileDir",default="/afs/cern.ch/work/m/mukherje/Training_VBFHH/HHbbgg_ETH/Training/2016_test/",
+                        action="store",type="string",dest="outputFileDir",default="/eos/user/m/mukherje/HH_bbgg/Training_Ntuple/2016_MX_gt_500_ttH_0/",
                         help="directory where to save output trees",
                         ),
             ]
