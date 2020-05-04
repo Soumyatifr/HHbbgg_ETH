@@ -9,20 +9,16 @@ import preprocessing_utils as preprocessing
 import plotting_utils as plotting
 import optimization_utils as optimization
 import postprocessing_utils as postprocessing
-
+import matplotlib.pyplot as plt
 import pandas as pd
 import root_pandas as rpd
 import json
 
 treeDir = 'tagsDumper/trees/'
 #samples = ["VBFHHTo2B2G_CV_1_C2V_2_C3_1","VBFHHTo2B2G_CV_1_C2V_1_C3_1","GluGluToHHTo2B2G_node_all","ggh","vh","qqh","tth","DiPhotonJetsBox_","DiPhotonJetsBox2BJets_","DiPhotonJetsBox1BJet_","GJet_Pt-20to40","GJet_Pt-40toInf"]#
-samples = ["DiPhotonJetsBox_","DiPhotonJetsBox1BJet_","DiPhotonJetsBox2BJets_","GJet_Pt-20to40","GJet_Pt-40toInf","GluGluToHHTo2B2G_node_all"]
+#samples = ["VBFHHTo2B2G_CV_1_C2V_0_C3_1","DiPhotonJetsBox_","DiPhotonJetsBox1BJet_","tth","DiPhotonJetsBox2BJets_","GJet_Pt-20to40","GJet_Pt-40toInf","hh_LO"]
+samples = ["VBFHHTo2B2G_CV_1_C2V_0_C3_1","hh_LO"]
 #samples = ["ggh","vh","qqh","tth"]
-#samples = ["DiPhotonJetsBox_","DiPhotonJetsBox2BJets_","DiPhotonJetsBox1BJet_","GJet_Pt-20to40","GJet_Pt-40toInf","ggh","vh","qqh","tth","GluGluToHHTo2B2G_node_all"]
-#samples = ["VBFHHTo2B2G_CV_1_C2V_2_C3_1","VBFHHTo2B2G_CV_1_C2V_1_C3_1","GluGluToHHTo2B2G_node_all","DiPhotonJetsBox_","DiPhotonJetsBox2BJets","DiPhotonJetsBox1BJet","GJet_Pt-20to40","GJet_Pt-40toInf","ggh","vh","qqh","tth"] #,"DiPhotonJetsBox2BJets","DiPhotonJetsBox1BJet","ttH","TTGJets","TTTo2L2Nu","TTGG_0Jets","GJet_Pt-20to40","GJet_Pt-40toInf"]#
-#samples = ["GluGluToHHTo2B2G_node_all","GJet_Pt-20to40","GJet_Pt-40toInf"]#
-#samples = ["GluGluToHHTo2B2G_node_all","DiPhotonJetsBox_","DiPhotonJetsBox2BJets","DiPhotonJetsBox1BJet","ttH","TTGJets","TTGG_0Jets"]#
-#samples = ["GluGluToHHTo2B2G_node_all","TTTo2L2Nu"]#
 background_names = []
 #samples = ["VBFHHTo2B2G_CV_1_C2V_1_C3_1","DiPhotonJetsBox_", "DiPhotonJetsBox2BJets"]#
 cleanOverlap = True   # Do not forget to change it 
@@ -31,7 +27,7 @@ treeTag=""
 NodesNormalizationFile = '/afs/cern.ch/user/n/nchernya/public/Soumya/reweighting_normalization_26_11_2019.json'
 useMixOfNodes = True
 whichNodes = ['SM']  #used to create cumulative on SM only
-doRhoReweight = True
+doRhoReweight = False
 
 #just a list of all nodes to add weight branches in the trees
 nodes_branches = list(np.arange(0,12,1))   #all nodes are used to train. 
@@ -50,7 +46,7 @@ def addSamples():#define here the samples you want to process
     elif year==2:
       year_str='2018'
     gghhname="hh2016_13TeV_125"
-    vbfhh_name="vbfhh2017_13TeV_125"
+    vbfhh_name="vbfhh2016_13TeV_125"
     #gghname = "ggh2016_13TeV_125"
     gghname = "GluGluHToGG_M125_13TeV_amcatnloFXFX_pythia8"
     vhname =  "vh2016_13TeV_125"
@@ -63,36 +59,36 @@ def addSamples():#define here the samples you want to process
     utils.IO.use_signal_nodes(useMixOfNodes,whichNodes,ggHHMixOfNodesNormalizations) 
     files= os.listdir(utils.IO.ldata+ntuples)
 
-    couplings = 'CV_1_C2V_1_C3_1,CV_1_C2V_2_C3_1,CV_1_C2V_1_C3_2,CV_1_C2V_1_C3_0,CV_0_5_C2V_1_C3_1,CV_1_5_C2V_1_C3_1'.split(',') ### THE ORDER IS EXTREMELY IMPRORTANT, DO NOT CHANGE
-    signal = []
-    for coup in couplings :
-          signal.append('output_VBFHHTo2B2G_%s_13TeV-madgraph.root'%coup)
+#    couplings = 'CV_1_C2V_1_C3_1,CV_1_C2V_2_C3_1,CV_1_C2V_1_C3_2,CV_1_C2V_1_C3_0,CV_0_5_C2V_1_C3_1,CV_1_5_C2V_1_C3_1'.split(',') ### THE ORDER IS EXTREMELY IMPRORTANT, DO NOT CHANGE
+#    signal = []
+#    for coup in couplings :
+#          signal.append('output_VBFHHTo2B2G_%s_13TeV-madgraph.root'%coup)
           #signal.append('output_VBFHHTo2B2G_%s_TuneCP5_PSWeights_13TeV-madgraph-pythia8.root'%coup)
-    print ("The vbfhh samples are:")
-    print signal
-    signal_name = 'vbfhh2017_13TeV_125_13TeV_VBFDoubleHTag_0'
-    utils.IO.reweightVBFHH = True
-    utils.IO.vbfhh_cv = [1.]
-    utils.IO.vbfhh_c2v = [0.]
-    utils.IO.vbfhh_kl = [1.]
-    for sig in signal:
-        utils.IO.add_signal(ntuples,sig,1,'tagsDumper/trees/%s'%signal_name,year)
+#    print ("The vbfhh samples are:")
+#    print signal
+#    signal_name = 'vbfhh2016_13TeV_125_13TeV_VBFDoubleHTag_0'
+    utils.IO.reweightVBFHH = False
+#    utils.IO.vbfhh_cv = [1.]
+#    utils.IO.vbfhh_c2v = [0.]
+#    utils.IO.vbfhh_kl = [1.]
+#    for sig in signal:
+#        utils.IO.add_signal(ntuples,sig,1,'tagsDumper/trees/%s'%signal_name,year)
    # for iSample in samples:
     for num,iSample in enumerate(samples):
             process  = [s for s in files if iSample in s]
-#        if "VBFHHTo2B2G_CV_1_C2V_2_C3_1" in iSample:
-#            utils.IO.add_signal(ntuples,process,1,treeDir+vbfhh_name+'_13TeV_VBFDoubleHTag_0',year)
+            if "VBFHHTo2B2G_CV_1_C2V_0_C3_1" in iSample:
+              utils.IO.add_signal(ntuples,process,1,treeDir+vbfhh_name+'_13TeV_VBFDoubleHTag_0',year)
 #        else :
-            if "VBFHHTo2B2G" in iSample:
-               if utils.IO.reweightVBFHH==False:
-                          utils.IO.add_signal(ntuples,process,1,treeDir+vbfhh_name+'_13TeV_VBFDoubleHTag_0',year)
-               else :
-                          print 'signal samples are already added'
+#            if "VBFHHTo2B2G" in iSample:
+#               if utils.IO.reweightVBFHH==False:
+#                          utils.IO.add_signal(ntuples,process,1,treeDir+vbfhh_name+'_13TeV_VBFDoubleHTag_0',year)
+#               else :
+#                          print 'signal samples are already added'
             #print 'adding bkg with process num : ',process[0],"  ",-num
             elif ("GluGluToHHTo2B2G" in iSample) and (useMixOfNodes==False):
               utils.IO.add_background(ntuples,process,-num,treeDir+gghhname+'_13TeV_VBFDoubleHTag_0',year)
               background_names.append(samples[num].replace('-','_'))
-            elif ("GluGluToHHTo2B2G"in iSample) and (useMixOfNodes==True) :
+            elif ("hh_LO"in iSample) and (useMixOfNodes==True) :
               utils.IO.use_signal_nodes(useMixOfNodes,whichNodes,ggHHMixOfNodesNormalizations)
               utils.IO.add_background(ntuples,process,-num,treeDir+gghhname+'_13TeV_VBFDoubleHTag_0',year)
               background_names.append(samples[num].replace('-','_'))
@@ -156,10 +152,7 @@ def main(options,args):
     print options.addnodes
     addSamples()
     
-   # branch_names = 'leadingJet_DeepFlavour,subleadingJet_DeepFlavour,absCosThetaStar_CS,absCosTheta_bb,absCosTheta_gg,diphotonCandidatePtOverdiHiggsM,dijetCandidatePtOverdiHiggsM,customLeadingPhotonIDMVA,customSubLeadingPhotonIDMVA,leadingPhotonSigOverE,subleadingPhotonSigOverE,sigmaMOverM,noexpand:(leadingPhoton_pt/CMS_hgg_mass),noexpand:(subleadingPhoton_pt/CMS_hgg_mass),noexpand:(leadingJet_pt/Mjj),noexpand:(subleadingJet_pt/Mjj),rho,noexpand:(leadingJet_bRegNNResolution*1.4826),noexpand:(subleadingJet_bRegNNResolution*1.4826),noexpand:(sigmaMJets*1.4826),PhoJetMinDr,PhoJetOtherDr,noexpand:(VBFleadJet_pt/VBFJet_mjj),VBFleadJet_eta,noexpand:(VBFsubleadJet_pt/VBFJet_mjj),VBFsubleadJet_eta,VBFCentrality_jg,VBFCentrality_jb,VBFDeltaR_jg,VBFDeltaR_jb,VBFProd_eta,VBFJet_mjj,VBFJet_Delta_eta,VBFleadJet_QGL,VBFsubleadJet_QGL,diHiggs_pt,MX'.split(",")
     branch_names = 'leadingJet_DeepFlavour,subleadingJet_DeepFlavour,absCosThetaStar_CS,absCosTheta_bb,absCosTheta_gg,diphotonCandidatePtOverdiHiggsM,dijetCandidatePtOverdiHiggsM,customLeadingPhotonIDMVA,customSubLeadingPhotonIDMVA,leadingPhotonSigOverE,subleadingPhotonSigOverE,sigmaMOverM,noexpand:(leadingPhoton_pt/CMS_hgg_mass),noexpand:(subleadingPhoton_pt/CMS_hgg_mass),noexpand:(leadingJet_pt/Mjj),noexpand:(subleadingJet_pt/Mjj),rho,noexpand:(leadingJet_bRegNNResolution*1.4826),noexpand:(subleadingJet_bRegNNResolution*1.4826),noexpand:(sigmaMJets*1.4826),PhoJetMinDr,PhoJetOtherDr,noexpand:(VBFleadJet_pt/VBFJet_mjj),VBFleadJet_eta,noexpand:(VBFsubleadJet_pt/VBFJet_mjj),VBFsubleadJet_eta,VBFCentrality_jg,VBFCentrality_jb,VBFDeltaR_jg,VBFDeltaR_jb,VBFProd_eta,VBFJet_mjj,VBFJet_Delta_eta,VBFleadJet_QGL,VBFsubleadJet_QGL,diHiggs_pt,MX'.split(",")
-    #branch_names = 'leadingJet_DeepFlavour,subleadingJet_DeepFlavour,absCosThetaStar_CS,absCosTheta_bb,absCosTheta_gg,diphotonCandidatePtOverdiHiggsM,dijetCandidatePtOverdiHiggsM,customLeadingPhotonIDMVA,customSubLeadingPhotonIDMVA,leadingPhotonSigOverE,subleadingPhotonSigOverE,sigmaMOverM,noexpand:(leadingPhoton_pt/CMS_hgg_mass),noexpand:(subleadingPhoton_pt/CMS_hgg_mass),noexpand:(leadingJet_pt/Mjj),noexpand:(subleadingJet_pt/Mjj),rho,noexpand:(leadingJet_bRegNNResolution*1.4826),noexpand:(subleadingJet_bRegNNResolution*1.4826),noexpand:(sigmaMJets*1.4826),PhoJetMinDr,PhoJetOtherDr,noexpand:(VBFleadJet_pt/VBFJet_mjj),VBFleadJet_eta,noexpand:(VBFsubleadJet_pt/VBFJet_mjj),VBFsubleadJet_eta,VBFCentrality_jg,VBFCentrality_jb,VBFDeltaR_jg,VBFDeltaR_jb,VBFProd_eta,VBFJet_mjj,VBFJet_Delta_eta,VBFleadJet_QGL,VBFsubleadJet_QGL,diHiggs_pt,MX,VBF_angleHH,VBF_dRHH,VBF_etaHH'.split(",")
-#    branch_names = 'leadingJet_DeepFlavour,subleadingJet_DeepFlavour,absCosThetaStar_CS,absCosTheta_bb,absCosTheta_gg,diphotonCandidatePtOverdiHiggsM,dijetCandidatePtOverdiHiggsM,customLeadingPhotonIDMVA,customSubLeadingPhotonIDMVA,leadingPhotonSigOverE,subleadingPhotonSigOverE,sigmaMOverM,noexpand:(leadingPhoton_pt/CMS_hgg_mass),noexpand:(subleadingPhoton_pt/CMS_hgg_mass),noexpand:(leadingJet_pt/Mjj),noexpand:(subleadingJet_pt/Mjj),rho,noexpand:(leadingJet_bRegNNResolution*1.4826),noexpand:(subleadingJet_bRegNNResolution*1.4826),noexpand:(sigmaMJets*1.4826),PhoJetMinDr,PhoJetOtherDr,noexpand:(VBFleadJet_pt/VBFJet_mjj),VBFleadJet_eta,noexpand:(VBFsubleadJet_pt/VBFJet_mjj),VBFsubleadJet_eta,VBFCentrality_jg,VBFCentrality_jb,VBFDeltaR_jg,VBFDeltaR_jb,VBFProd_eta,VBFJet_mjj,VBFJet_Delta_eta,VBFleadJet_QGL,VBFDelta_phi,VBFsubleadJet_QGL,VBF_angleHH,VBF_dRHH,VBF_etaHH'.split(",")
     additionalCut_names = 'CMS_hgg_mass,Mjj,MX,ttHScore,btagReshapeWeight,VBFleadJet_PUID,VBFsubleadJet_PUID'.split(',')
  #   additionalCut_names = 'CMS_hgg_mass,Mjj,MX'.split(',')
   #  if options.addHHTagger:
@@ -183,8 +176,8 @@ def main(options,args):
  #   cuts = 'leadingJet_pt>20 & subleadingJet_pt> 20 & (leadingJet_pt/leadingJet_bRegNNCorr>20) & (subleadingJet_pt/subleadingJet_bRegNNCorr>20) '
     #cuts = 'VBFleadJet_eta < 4.7 & VBFsubleadJet_eta < 4.7 & VBFleadJet_pt > 40'
     #cuts = 'VBFsubleadJet_eta < 4.7'
-    cuts = 'ttHScore > 0.26'
-
+    cuts = 'ttHScore > 0.26 & MX > 500'
+    
 
     #if not options.addData:
     #   cuts = 'leadingJet_pt>0 '
@@ -204,15 +197,25 @@ def main(options,args):
     if utils.IO.signalMixOfNodes : nodesWeightBranches=[ 'benchmark_reweight_%s'%i for i in nodes_branches ] 
     preprocessing.set_signals(branch_names+branch_cuts+event_branches+additionalCut_names+signal_trainedOn,False,cuts) 
     preprocessing.set_backgrounds(branch_names+branch_cuts+event_branches+additionalCut_names+bkg_trainedOn,False,cuts) 
-
-
-    ##just do it only for 2016 after that I will put any flag only....
     if doRhoReweight == True :
         print "working for the rho reweighting"
         diphoton_for_rho = ['output_DiPhotonJetsBox_MGG-80toInf_13TeV-Sherpa.root','output_DiPhotonJetsBox_MGG-80toInf_13TeV-Sherpa.root']
         diphoton_frame2016=rpd.read_root(utils.IO.ldata+'/'+diphoton_for_rho[0],'tagsDumper/trees/DiPhotonJetsBox_MGG_80toInf_13TeV_Sherpa_13TeV_VBFDoubleHTag_0', columns = ['weight','rho'])
         diphoton_frame2017=rpd.read_root('/eos/user/m/mukherje/HH_bbgg/2017_Sample/'+diphoton_for_rho[1],'tagsDumper/trees/DiPhotonJetsBox_MGG_80toInf_13TeV_Sherpa_13TeV_VBFDoubleHTag_0', columns = ['weight','rho'])
         preprocessing.reweight_rho('rho',diphoton_frame2016,diphoton_frame2017,utils.IO.signal_df[0])
+
+    for bkg_type in range(utils.IO.nBkg):
+        if utils.IO.bkgProc[bkg_type] == -2 : #ggHH : 
+           df_ggHH_NLO = (rpd.read_root('/eos/user/m/mukherje/HH_bbgg/Ntuples_30_04_2020/2016_NtuplesII/output_hh_nlo_kl_1_kt_1_2016.root','tagsDumper/trees/hh%s_13TeV_125_13TeV_VBFDoubleHTag_0'%Y, columns = ['weight','diHiggs_pt','PhoJetMinDr','genweight'])).query('genweight<0.1')
+           print utils.IO.bkgProc[bkg_type]
+           preprocessing.reweight_NLO_LO('diHiggs_pt',df_ggHH_NLO,utils.IO.background_df[bkg_type],np.linspace(0,600,100))
+           preprocessing.reweight_NLO_LO('PhoJetMinDr',df_ggHH_NLO,utils.IO.background_df[bkg_type],np.linspace(0,3,100))
+
+
+    _,_,_ = plt.hist(utils.IO.signal_df[0]['rho'], np.linspace(0,100,100), facecolor='b',weights=utils.IO.signal_df[0]['weight'], alpha=0.5,normed=False,label='2016')
+    plt.xlabel('rho [GeV]')
+    plt.ylabel('A.U.')
+    plt.savefig('rho_2016.png')
 
 
     #### Adding new deltaR (photon,jet) branches ####
@@ -238,14 +241,8 @@ def main(options,args):
     X_bkg,y_bkg,weights_bkg,X_sig,y_sig,weights_sig=preprocessing.set_variables(branch_names)  
  
     data_branches = ["weight"]
-    #data_branches = 'weight,leadingJet_DeepFlavour,subleadingJet_DeepFlavour, VBFleadJet_QGL, VBFsubleadJet_QGL,absCosThetaStar_CS,absCosTheta_bb,absCosTheta_gg,diphotonCandidatePtOverdiHiggsM,dijetCandidatePtOverdiHiggsM,customLeadingPhotonIDMVA,customSubLeadingPhotonIDMVA,leadingPhotonSigOverE,subleadingPhotonSigOverE,sigmaMOverM,noexpand:(leadingPhoton_pt/CMS_hgg_mass),noexpand:(subleadingPhoton_pt/CMS_hgg_mass),noexpand:(leadingJet_pt/Mjj),noexpand:(subleadingJet_pt/Mjj),rho,noexpand:(leadingJet_bRegNNResolution*1.4826),noexpand:(subleadingJet_bRegNNResolution*1.4826),noexpand:(sigmaMJets*1.4826),PhoJetMinDr,PhoJetOtherDr,VBFleadJet_pt,VBFleadJet_eta,VBFsubleadJet_pt,VBFsubleadJet_eta,VBFCentrality_jg,VBFCentrality_jb,VBFDeltaR_jg,VBFDeltaR_jb,VBFProd_eta,VBFDelta_phi,VBFJet_mjj,VBFJet_Delta_eta'.split(",")
 
 
-#    if '2016' in vhname[0] and doRhoReweight == True :
-#        diphoton_for_rho = ['output_DiPhotonJetsBox_MGG-80toInf_13TeV-Sherpa.root','output_DiPhotonJetsBox_MGG-80toInf_13TeV-Sherpa.root']
-#        diphoton_frame2016=rpd.read_root(utils.IO.ldata+'/'+diphoton_for_rho[0],'tagsDumper/trees/DiPhotonJetsBox_MGG_80toInf_13TeV_Sherpa_13TeV_VBFDoubleHTag_0', columns = ['weight','rho'])
-#        diphoton_frame2017=rpd.read_root('/eos/user/m/mukherje/HH_bbgg/2017_Sample/'+diphoton_for_rho[1],'tagsDumper/trees/DiPhotonJetsBox_MGG_80toInf_13TeV_Sherpa_13TeV_VBFDoubleHTag_0', columns = ['weight','rho'])
-#        preprocessing.reweight_rho('rho',diphoton_frame2016,diphoton_frame2017,utils.IO.signal_df[0])
     
     if options.addData:
         #preprocessing.set_data(branch_names+branch_cuts+event_branches,cuts)
@@ -273,6 +270,8 @@ def main(options,args):
     print 'add Tagger' ,options.addHHTagger 
     #compute the MVA
     Y_pred_bkg = []
+    Y_pred_bkg1 = []
+    Y_pred_bkg2 = []
     if not options.addHHTagger:
         print 'Adding tagger output'
         loaded_model = joblib.load(os.path.expanduser(options.trainingDir+options.trainingVersion+'.pkl'))
@@ -286,9 +285,11 @@ def main(options,args):
        # for i in range(0,0):   #not to apply MVA on bkg
             print 'evaluating MVA for bkg : ',str(i)
             Y_pred_bkg.append(loaded_model.predict_proba(bkg[i])[:,loaded_model.n_classes_-1].astype(np.float64))
+            Y_pred_bkg1.append(loaded_model.predict_proba(bkg[i])[:,loaded_model.n_classes_-2].astype(np.float64))
+            Y_pred_bkg2.append(loaded_model.predict_proba(bkg[i])[:,loaded_model.n_classes_-3].astype(np.float64))
         Y_pred_sig = loaded_model.predict_proba(X_sig)[:,loaded_model.n_classes_-1].astype(np.float64)
-    
-    
+        Y_pred_sig1 = loaded_model.predict_proba(X_sig)[:,loaded_model.n_classes_-2].astype(np.float64)    
+        Y_pred_sig2 = loaded_model.predict_proba(X_sig)[:,loaded_model.n_classes_-3].astype(np.float64)
     
     outTag = options.outTag
     outDir=os.path.expanduser("/afs/cern.ch/work/m/mukherje/Training_VBFHH/HHbbgg_ETH/"+outTag)
@@ -336,19 +337,19 @@ def main(options,args):
     #to a position in the vector
        nTot,dictVar = postprocessing.stackFeatures(sig_count_df,branch_names+additionalCut_names+signal_trainedOn+overlap)
     #apply isSignal cleaning
-       nCleaned = nTot[np.where(nTot[:,dictVar['weight']]!=0),:][0]
-    
+       #nCleaned = nTot[np.where(nTot[:,dictVar['weight']]!=0),:][0]
+       nCleaned = nTot 
        processPath=os.path.expanduser(options.outputFileDir)+outTag+'/'+utils.IO.signalName[0].split("/")[len(utils.IO.signalName[0].split("/"))-1].replace("output_","").replace(".root","")+"_preselection"+".root"
 
 
        if not options.addHHTagger:
-            postprocessing.saveTree(processPath,dictVar,nCleaned,Y_pred_sig)
+            postprocessing.saveTree(processPath,dictVar,nCleaned,Y_pred_sig,Y_pred_sig1,Y_pred_sig2)
        else:
              postprocessing.saveTree(processPath,dictVar,nCleaned)        
     
        processPath=os.path.expanduser(options.outputFileDir)+outTag+'/'+utils.IO.signalName[0].split("/")[len(utils.IO.signalName[0].split("/"))-1].replace("output_","").replace(".root","")+"_preselection_diffNaming"+".root"
        if not options.addHHTagger:
-             postprocessing.saveTree(processPath,dictVar,nCleaned,Y_pred_sig,nameTree="reducedTree_sig%s"%treeTag)
+             postprocessing.saveTree(processPath,dictVar,nCleaned,Y_pred_sig,Y_pred_sig1,Y_pred_sig2,nameTree="reducedTree_sig%s"%treeTag)
        else:    
              postprocessing.saveTree(processPath,dictVar,nCleaned,nameTree="reducedTree_sig%s"%treeTag)
        print utils.IO.signal_df[0]['rho']
@@ -376,7 +377,7 @@ def main(options,args):
 
         processPath=os.path.expanduser(options.outputFileDir)+outTag+'/'+utils.IO.backgroundName[iProcess].split("/")[len(utils.IO.backgroundName[iProcess].split("/"))-1].replace("output_","").replace(".root","")+"_preselection"+".root"
         if not options.addHHTagger:
-            postprocessing.saveTree(processPath,dictVar,nCleaned,Y_pred_bkg[iProcess])
+            postprocessing.saveTree(processPath,dictVar,nCleaned,Y_pred_bkg[iProcess],Y_pred_bkg1[iProcess],Y_pred_bkg2[iProcess])
         else:
             postprocessing.saveTree(processPath,dictVar,nCleaned)
         
@@ -391,7 +392,7 @@ def main(options,args):
             treeName = "reducedTree_bkg_"+bkgName+treeTag
 
         if not options.addHHTagger:        
-            postprocessing.saveTree(processPath,dictVar,nCleaned,Y_pred_bkg[iProcess],nameTree=treeName)
+            postprocessing.saveTree(processPath,dictVar,nCleaned,Y_pred_bkg[iProcess],Y_pred_bkg1[iProcess],Y_pred_bkg2[iProcess],nameTree=treeName)
         else:
             postprocessing.saveTree(processPath,dictVar,nCleaned,nameTree=treeName)    
     
@@ -415,7 +416,7 @@ if __name__ == "__main__":
                         ),
             make_option("-t","--training",
                         action="store", type="string",dest="trainingVersion",
-                        default="training_with_2016_test_C2V0_training",
+                        default="training_with_2016_MX_gt_500_ttHkiller_0p26",
                         help="MVA version to apply",
                         ),
             make_option("-x","--trainingDir",
@@ -436,7 +437,7 @@ if __name__ == "__main__":
                         help="add or not reweighted nodes",
                         ),
             make_option("-y","--year",
-                        action="store",type=int,dest="year",default=2,
+                        action="store",type=int,dest="year",default=0,
                         help="which year : 2016-0,2017-1,2018-2",
                         ),
             make_option("-l","--ldata",
@@ -448,7 +449,7 @@ if __name__ == "__main__":
                         help="decide if you want to process or not data",
                         ),
             make_option("-f","--outputFileDir",
-                        action="store",type="string",dest="outputFileDir",default="/afs/cern.ch/work/m/mukherje/Training_VBFHH/HHbbgg_ETH/Training/2016_C2V0_new/",
+                        action="store",type="string",dest="outputFileDir",default="/afs/cern.ch/work/m/mukherje/Training_VBFHH/HHbbgg_ETH/Training/2016_test/",
                         help="directory where to save output trees",
                         ),
             ]

@@ -51,7 +51,7 @@ def cutInvariantMass(vec,varNum,xLow,xUp):
     return nCleaned_massWindow
 
 
-def saveTree(processPath,dictVar,vector,MVAVector=None,SF=1,nameTree="reducedTree"):
+def saveTree(processPath,dictVar,vector,MVAVector=None,MVAVector1=None,MVAVector2=None,SF=1,nameTree="reducedTree"):
     from root_numpy import array2root
     i=0
     for key in dictVar.keys():
@@ -74,8 +74,8 @@ def saveTree(processPath,dictVar,vector,MVAVector=None,SF=1,nameTree="reducedTre
     #        name = key.replace('event%2!=0','event_odd')
     #    elif 'event%5!=0' in key:
     #        name = key.replace('event%5!=0','event_odd5')
-     #   elif 'event%' in key:
-     #       name = 'eventTrainedOn'
+        elif 'event%' in key:
+            name = 'eventTrainedOn'
 
         if SF != 1:
             if key == 'weight':
@@ -90,4 +90,12 @@ def saveTree(processPath,dictVar,vector,MVAVector=None,SF=1,nameTree="reducedTre
     if MVAVector is not None: 
         v=(np.asarray(MVAVector.ravel()))
         v.dtype = [('MVAOutput', np.float64)]
+        array2root(v, processPath, nameTree, mode ='update')
+    if MVAVector1 is not None:
+        v=(np.asarray(MVAVector1.ravel()))
+        v.dtype = [('MVAOutput1', np.float64)]
+        array2root(v, processPath, nameTree, mode ='update')
+    if MVAVector2 is not None:
+        v=(np.asarray(MVAVector2.ravel()))
+        v.dtype = [('MVAOutput2', np.float64)]
         array2root(v, processPath, nameTree, mode ='update')

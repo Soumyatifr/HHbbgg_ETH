@@ -217,9 +217,19 @@ def normalize_process_weights_split(w_b,y_b,w_s,y_s):
     return w_bkg,w_sig
 
 
+def reweight_NLO_LO(what,df0,df1,bins):
+    m0, bins = np.histogram(df0[what],bins=bins,weights=df0["weight"],normed=True)
+    m1, _ = np.histogram(df1[what],bins=bins,weights=df1["weight"],normed=True)
+    weights = m0.astype(np.float32) / m1.astype(np.float32)
+    weights[np.isnan(weights)] = 1.
+    bins[-1] = df1[what].max()+1.
+    df1["%s_bin"%what] = pd.cut(df1[what],bins,labels=range(0,bins.shape[-1]-1))
+    rewei = df1[["%s_bin"%what,"weight"]].apply(lambda x: weights[x[0]]*x[1], axis=1, raw=True)
+    df1["weight"] = rewei * df1["weight"].sum() / rewei.sum()
+
+
+
     
-    
-                       
 def normalize_process_weights(w_b,y_b,w_s,y_s):
     proc=999
     proc_considered = []
@@ -513,23 +523,24 @@ def set_signals(branch_names,shuffle,cuts='event>=0'):
         utils.IO.nSig = 1 #trick to only use 1 signal
     
     for i in range(utils.IO.nSig):
+        utils.IO.signal_df[i] = drop_nan(utils.IO.signal_df[i])
         if shuffle:
             utils.IO.signal_df[i]['random_index'] = np.random.permutation(range(utils.IO.signal_df[i].index.size))
             utils.IO.signal_df[i].sort_values(by='random_index',inplace=True)
 
 
-def set_signals(branch_names,shuffle,cuts='event>=0'):
-    for i in range(utils.IO.nSig):
-        treeName = utils.IO.signalTreeName[i]
-        print "using tree:"+treeName
-        utils.IO.signal_df.append((rpd.read_root(utils.IO.signalName[i],treeName, columns = branch_names)).query(cuts))
-        define_process_weight(utils.IO.signal_df[i],utils.IO.sigProc[i],utils.IO.signalName[i],treeName)
-        utils.IO.signal_df[i]['year'] = (np.ones_like(utils.IO.signal_df[i].index)*utils.IO.sigYear[i] ).astype(np.int8)
-        #restore_normalization(utils.IO.signal_df[i],weight='weight',norm='btagReshapeWeight')
+#def set_signals(branch_names,shuffle,cuts='event>=0'):
+#    for i in range(utils.IO.nSig):
+#        treeName = utils.IO.signalTreeName[i]
+#        print "using tree:"+treeName
+#        utils.IO.signal_df.append((rpd.read_root(utils.IO.signalName[i],treeName, columns = branch_names)).query(cuts))
+#        define_process_weight(utils.IO.signal_df[i],utils.IO.sigProc[i],utils.IO.signalName[i],treeName)
+#        utils.IO.signal_df[i]['year'] = (np.ones_like(utils.IO.signal_df[i].index)*utils.IO.sigYear[i] ).astype(np.int8)
+##        #restore_normalization(utils.IO.signal_df[i],weight='weight',norm='btagReshapeWeight')
 
-        if shuffle:
-            utils.IO.signal_df[i]['random_index'] = np.random.permutation(range(utils.IO.signal_df[i].index.size))
-            utils.IO.signal_df[i].sort_values(by='random_index',inplace=True)
+#        if shuffle:
+#            utils.IO.signal_df[i]['random_index'] = np.random.permutation(range(utils.IO.signal_df[i].index.size))
+#            utils.IO.signal_df[i].sort_values(by='random_index',inplace=True)
 
 def  set_backgrounds(branch_names,shuffle,cuts='event>=0'):
     for i in range(utils.IO.nBkg):
@@ -547,9 +558,10 @@ def  set_backgrounds(branch_names,shuffle,cuts='event>=0'):
               branch_names +=[ 'benchmark_reweight_%s'%j for j in whichNodes ] 
               node_df = rpd.read_root(utils.IO.backgroundName[i],treeName, columns = branch_names).query(cuts)
               year = ''
-              if utils.IO.sigYear[i]==1 : year='2017'
-              elif utils.IO.sigYear[i]==0 : year='2016'
-              elif utils.IO.sigYear[i]==2 : year='2018'
+              if utils.IO.bkgYear[i]==1 : year='2017'
+              elif utils.IO.bkgYear[i]==0 : year='2016'
+              elif utils.IO.bkgYear[i]==2 : year='2018'
+              print str(year)
               node_name = utils.IO.ggHHWhichMixOfNodes[0]
               print (node_name)
               norm_value=utils.IO.ggHHMixOfNodesNormalizations[year]['benchmark_%s_normalization'%node_name]
@@ -561,7 +573,7 @@ def  set_backgrounds(branch_names,shuffle,cuts='event>=0'):
               node_df['weight'] *= node_df['nodes_sumWeight']
               utils.IO.background_df.append(node_df)
               utils.IO.background_df.append((rpd.read_root(utils.IO.backgroundName[i],treeName, columns = branch_names)).query(cuts))
-              define_process_weight(utils.IO.background_df[0],utils.IO.bkgProc[i],utils.IO.backgroundName[0],treeName)
+              define_process_weight(utils.IO.background_df[i],utils.IO.bkgProc[i],utils.IO.backgroundName[i],treeName)
               utils.IO.background_df[i]['year'] = (np.ones_like(utils.IO.background_df[i].index)*utils.IO.bkgYear[0] ).astype(np.int8)
               #restore_normalization(utils.IO.background_df[i],weight='weight',norm='btagReshapeWeight')
 #        else :
@@ -570,7 +582,7 @@ def  set_backgrounds(branch_names,shuffle,cuts='event>=0'):
 #              define_process_weight(utils.IO.background_df[i],utils.IO.bkgProc[i],utils.IO.backgroundName[i],treeName)
 #              utils.IO.background_df[i]['year'] = (np.ones_like(utils.IO.background_df[i].index)*utils.IO.bkgYear[i] ).astype(np.int8)
               #restore_normalization(utils.IO.background_df[i],weight='weight',norm='btagReshapeWeight')
-
+           utils.IO.background_df[i] = drop_nan(utils.IO.background_df[i])
            if shuffle:
               utils.IO.background_df[i]['random_index'] = np.random.permutation(range(utils.IO.background_df[i].index.size))
               utils.IO.background_df[i].sort_values(by='random_index',inplace=True)
