@@ -32,8 +32,8 @@ start_time = time.time()
 def main(options,args):
     year=options.year
     #please specify which year you want 
-    Y = 2018
-    outstr = "%s_MX_gt_500_ttHkiller_0p26"%Y
+    Y = 2017
+    outstr = "%s_MX_gt_500_ttHkiller_0p26_test_gghh"%Y
     doRhoReweight = False
     dirs = ['']
     ntuples = dirs[year]
@@ -173,7 +173,7 @@ def main(options,args):
 #****************************gghh LO reweighting with respect to the NLO samples**********************************************************
     for bkg_type in range(utils.IO.nBkg): 
         if utils.IO.bkgProc[bkg_type] == -2 : #ggHH : 
-           df_ggHH_NLO = (rpd.read_root('/eos/user/m/mukherje/HH_bbgg/Ntuples_30_04_2020/2018_NtuplesII/output_hh_nlo_kl_1_kt_1_2018.root','tagsDumper/trees/hh%s_13TeV_125_13TeV_VBFDoubleHTag_0'%Y, columns = ['weight','diHiggs_pt','PhoJetMinDr','genweight'])).query('genweight<0.1')
+           df_ggHH_NLO = (rpd.read_root('/eos/user/m/mukherje/HH_bbgg/Ntuples_30_04_2020/2017_NtuplesII/output_hh_nlo_kl_1_kt_1_2017.root','tagsDumper/trees/hh%s_13TeV_125_13TeV_VBFDoubleHTag_0'%Y, columns = ['weight','diHiggs_pt','PhoJetMinDr','genweight'])).query('genweight<0.1')
            print utils.IO.bkgProc[bkg_type]
            preprocessing.reweight_NLO_LO('diHiggs_pt',df_ggHH_NLO,utils.IO.background_df[bkg_type],np.linspace(0,600,100))        
            preprocessing.reweight_NLO_LO('PhoJetMinDr',df_ggHH_NLO,utils.IO.background_df[bkg_type],np.linspace(0,3,100))
@@ -269,7 +269,9 @@ def main(options,args):
 
     joblib.dump(clf, os.path.expanduser('/afs/cern.ch/work/m/mukherje/Training_VBFHH/HHbbgg_ETH/Training/output_files/training_with_%s.pkl'%outstr), compress=9)
 
-    plot_classifier = plotting.plot_classifier_output(clf,X_total_train,X_total_test,y_total_train,y_total_test,outString=outstr)
+    plot_classifier = plotting.plot_classifier_output(clf,-1,X_total_train,X_total_test,y_total_train,y_total_test,outString=outstr)
+    plot_classifier_gghh = plotting.plot_classifier_output(clf,-2,X_total_train,X_total_test,y_total_train,y_total_test,outString=outstr) 
+
     fpr_dipho,tpr_dipho = plotting.plot_roc_curve_multiclass_singleBkg(X_total_test,y_total_test,clf,-1,outString=outstr,weights=w_total_test)
     fpr_gJets,tpr_gJets = plotting.plot_roc_curve_multiclass_singleBkg(X_total_test,y_total_test,clf,-2,outString=outstr,weights=w_total_test)
     #fpr_singleH,tpr_singleH = plotting.plot_roc_curve_multiclass_singleBkg(X_total_test,y_total_test,clf,-3,outString=outstr,weights=w_total_test)
