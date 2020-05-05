@@ -7,8 +7,9 @@ import matplotlib.pyplot as plt
 
 
 # ---------------------------------------------------------------------------------------------------
-def plot_classifier_output(clf,y_proc,X_total_train,X_total_test,y_total_train,y_total_test,outString=None):
-        
+#def plot_classifier_output(clf,y_proc,X_total_train,X_total_test,y_total_train,y_total_test,outString=None):
+def plot_classifier_output(clf,y_proc,X_total_train,X_total_test,y_total_train,y_total_test,w_total_train,w_total_test,outString=None):        
+
 
     sig_train = X_total_train[y_total_train > 0]
     bkg_train = X_total_train[y_total_train == y_proc]
@@ -24,10 +25,16 @@ def plot_classifier_output(clf,y_proc,X_total_train,X_total_test,y_total_train,y
 
 
 
-    weights_sig_train = (np.ones_like(sig_train)/float(len(sig_train)))[:,1]
-    weights_bkg_train = (np.ones_like(bkg_train)/float(len(bkg_train)))[:,1]
-    weights_sig_test = (np.ones_like(sig_test)/float(len(sig_test)))[:,1]
-    weights_bkg_test = (np.ones_like(bkg_test)/float(len(bkg_test)))[:,1]
+#    weights_sig_train = (np.ones_like(sig_train)/float(len(sig_train)))[:,1]
+#    weights_bkg_train = (np.ones_like(bkg_train)/float(len(bkg_train)))[:,1]
+#    weights_sig_test = (np.ones_like(sig_test)/float(len(sig_test)))[:,1]
+#    weights_bkg_test = (np.ones_like(bkg_test)/float(len(bkg_test)))[:,1]
+
+
+    weights_sig_train = w_total_train[y_total_train > 0]
+    weights_bkg_train = w_total_train[y_total_train == y_proc]
+    weights_sig_test = w_total_test[y_total_test > 0]
+    weights_bkg_test = w_total_test[y_total_test == y_proc]
 
 
 
