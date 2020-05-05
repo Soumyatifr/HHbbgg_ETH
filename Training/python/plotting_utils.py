@@ -7,13 +7,13 @@ import matplotlib.pyplot as plt
 
 
 # ---------------------------------------------------------------------------------------------------
-def plot_classifier_output(clf,X_total_train,X_total_test,y_total_train,y_total_test,outString=None):
-    
+def plot_classifier_output(clf,y_proc,X_total_train,X_total_test,y_total_train,y_total_test,outString=None):
+        
 
     sig_train = X_total_train[y_total_train > 0]
-    bkg_train = X_total_train[y_total_train < 0]
+    bkg_train = X_total_train[y_total_train == y_proc]
     sig_test = X_total_test[y_total_test > 0]
-    bkg_test = X_total_test[y_total_test < 0]
+    bkg_test = X_total_test[y_total_test == y_proc]
 
     #if n_classses > 2 sig proba is the last one (in the way the code is written) 
     Y_pred_sig_train = clf.predict_proba(sig_train)[:,clf.n_classes_-1]
@@ -62,8 +62,8 @@ def plot_classifier_output(clf,X_total_train,X_total_test,y_total_train,y_total_
     ax1 = plt.subplot(111)
     
     # Draw solid histograms for the training data
-    ax1.bar(bin_centers-bin_widths/2.,Histo_training_S[0],facecolor='blue',linewidth=0,width=bin_widths,label='S (Train)',alpha=0.5)
-    ax1.bar(bin_centers-bin_widths/2.,Histo_training_B[0],facecolor='red',linewidth=0,width=bin_widths,label='B (Train)',alpha=0.5)
+    ax1.bar(bin_centers,Histo_training_S[0],facecolor='blue',linewidth=0,width=bin_widths,label='S (Train)',alpha=0.5)
+    ax1.bar(bin_centers,Histo_training_B[0],facecolor='red',linewidth=0,width=bin_widths,label='B (Train)',alpha=0.5)
     
     # # Draw error-bar histograms for the testing data
     ax1.errorbar(bin_centers, Histo_testing_S[0], yerr=ErrorBar_testing_S, xerr=None, ecolor='blue',c='blue',fmt='o',label='S (Test)')
@@ -87,8 +87,8 @@ def plot_classifier_output(clf,X_total_train,X_total_test,y_total_train,y_total_
         alabel.set_fontsize('small')
 
     # Save the result to png
-    plt.savefig(utils.IO.plotFolder+"classifierOutputPlot_"+str(outString)+".png")
-    plt.savefig(utils.IO.plotFolder+"classifierOutputPlot_"+str(outString)+".pdf")
+    plt.savefig(utils.IO.plotFolder+"classifierOutputPlot_"+"bkgProc"+str(y_proc)+str(outString)+".png")
+    plt.savefig(utils.IO.plotFolder+"classifierOutputPlot_"+"bkgProc"+str(y_proc)+str(outString)+".pdf")
 
 
 def plot_input_variables(X_sig,X_bkg,branch_names,y_bkg=None,n_bins=30,outString=None,plotProcess=None,labels=None):
