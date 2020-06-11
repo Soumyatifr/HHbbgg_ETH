@@ -61,25 +61,25 @@ def addSamples():#define here the samples you want to process
     ggHHMixOfNodesNormalizations = json.loads(open(NodesNormalizationFile).read())
     utils.IO.use_signal_nodes(useMixOfNodes,whichNodes,ggHHMixOfNodesNormalizations) 
     files= os.listdir(utils.IO.ldata+ntuples)
+
   
-  
 
 
 
-#    couplings = 'CV_1_C2V_1_C3_1,CV_1_C2V_2_C3_1,CV_1_C2V_1_C3_2,CV_1_C2V_1_C3_0,CV_0_5_C2V_1_C3_1,CV_1_5_C2V_1_C3_1'.split(',') ### THE ORDER IS EXTREMELY IMPRORTANT, DO NOT CHANGE
-#    signal = []
-#    for coup in couplings :
+    couplings = 'CV_1_C2V_1_C3_1,CV_1_C2V_0_C3_1'.split(',') ### THE ORDER IS EXTREMELY IMPRORTANT, DO NOT CHANGE
+    signal = []
+    for coup in couplings :
 #          signal.append('output_VBFHHTo2B2G_%s_dipoleRecoilOff-TuneCUETP8M1_PSweights_13TeV-madgraph-pythia8.root'%coup)
-#          signal.append('output_VBFHHTo2B2G_%s_dipoleRecoilOff-TuneCP5_PSweights_13TeV-madgraph-pythia8.root'%coup)
-#    print ("The vbfhh samples are:")
-#    print signal
-#    signal_name = 'vbfhh2018_13TeV_125_13TeV_VBFDoubleHTag_0'
+          signal.append('output_VBFHHTo2B2G_%s_dipoleRecoilOff-TuneCP5_PSweights_13TeV-madgraph-pythia8.root'%coup)
+    print ("The vbfhh samples are:")
+    print signal
+    signal_name = 'vbfhh2018_13TeV_125_13TeV_VBFDoubleHTag_0'
 #    utils.IO.reweightVBFHH = True
 #    utils.IO.vbfhh_cv = [1.]
 #    utils.IO.vbfhh_c2v = [1.]
 #    utils.IO.vbfhh_kl = [-2.0]
-#    for sig in signal:
-#        utils.IO.add_signal(ntuples,sig,1,'tagsDumper/trees/%s'%signal_name,year)
+    for sig in signal:
+        utils.IO.add_signal(ntuples,sig,1,'tagsDumper/trees/%s'%signal_name,year)
    # for iSample in samples:
     for num,iSample in enumerate(samples):
             process  = [s for s in files if iSample in s]
@@ -87,9 +87,9 @@ def addSamples():#define here the samples you want to process
 #              utils.IO.add_signal(ntuples,process,1,treeDir+vbfhh_name+'_13TeV_VBFDoubleHTag_0',year)
 #        else :
             if "VBFHHTo2B2G" in iSample:
-               if utils.IO.reweightVBFHH==False:
-                          utils.IO.add_signal(ntuples,process,1,treeDir+vbfhh_name+'_13TeV_VBFDoubleHTag_0',year)
-               else :
+    #           if utils.IO.reweightVBFHH==False:
+    #                      utils.IO.add_signal(ntuples,process,1,treeDir+vbfhh_name+'_13TeV_VBFDoubleHTag_0',year)
+    #           else :
                           print 'signal samples are already added'
             #print 'adding bkg with process num : ',process[0],"  ",-num
             elif ("GluGluToHHTo2B2G" in iSample) and (useMixOfNodes==False):
@@ -195,20 +195,32 @@ def main(options,args):
     #    cuts = 'rho>0'#just because with data we don't save the raw pt (we should)  -->>What  ? (Nadya)
 ######################
 ################################################################
+    vbfhh_signal_dataframes = []
+    for i in range(utils.IO.nSig):
+           treeName = utils.IO.signalTreeName[i]
+           print "using tree for multisignal:"+treeName
+           vbfhh_signal_dataframes.append((rpd.read_root(utils.IO.signalName[i],treeName, columns = branch_names)).query(cuts))
+           utils.IO.signal_df.append(pd.concat([vbfhh_signal_dataframes[i] for i in range(0,utils.IO.nSig)],ignore_index=True))
+           utils.IO.signal_df[0]['year'] = (np.ones_like(utils.IO.signal_df[0].index)*utils.IO.sigYear[0] ).astype(np.int8)
+           define_process_weight(utils.IO.signal_df[0],utils.IO.sigProc[0],utils.IO.signalName[0],treeName)
+           utils.IO.nSig = 1
+
+   
+
 
 
     branch_names = [c.strip() for c in branch_names]
     print "using following variables for MVA: " 
     print branch_names
 
-    vbfhh_signal_dataframes = []    
-    vbfhh_signal_dataframes.append((rpd.read_root(utils.IO.signalName[i],treeName, columns = branch_names)).query(cuts))
+#    vbfhh_signal_dataframes = []    
+#    vbfhh_signal_dataframes.append((rpd.read_root(utils.IO.signalName[i],treeName, columns = branch_names)).query(cuts))
    
 
-    utils.IO.signal_df.append(pd.concat([vbfhh_signal_dataframes[i] for i in range(0,utils.IO.nSig)],ignore_index=True))
-    utils.IO.signal_df[0]['year'] = (np.ones_like(utils.IO.signal_df[0].index)*utils.IO.sigYear[0] ).astype(np.int8)
-    define_process_weight(utils.IO.signal_df[0],utils.IO.sigProc[0],utils.IO.signalName[0],treeName)
-    utils.IO.nSig = 1 
+#    utils.IO.signal_df.append(pd.concat([vbfhh_signal_dataframes[i] for i in range(0,utils.IO.nSig)],ignore_index=True))
+#    utils.IO.signal_df[0]['year'] = (np.ones_like(utils.IO.signal_df[0].index)*utils.IO.sigYear[0] ).astype(np.int8)
+#    define_process_weight(utils.IO.signal_df[0],utils.IO.sigProc[0],utils.IO.signalName[0],treeName)
+#    utils.IO.nSig = 1 
     
     # no need to shuffle here, we just count events
     nodesWeightBranches=[]
@@ -347,8 +359,8 @@ def main(options,args):
  
 ###########################  signal  block starts  ################################################################
     for isig in range(0,utils.IO.nSig):
-       sig_count_df = utils.IO.signal_df[0]
-       print utils.IO.signalName[0]
+       sig_count_df = utils.IO.signal_df[i]
+       print utils.IO.signalName[i]
        preprocessing.define_process_weight(sig_count_df,utils.IO.sigProc[0],utils.IO.signalName[0],utils.IO.signalTreeName[0],cleanSignal=True,cleanOverlap=cleanOverlap)
        #print utils.IO.signal_df[0]['rho']
  
@@ -366,7 +378,7 @@ def main(options,args):
        else:
              postprocessing.saveTree(processPath,dictVar,nCleaned)        
     
-       processPath=os.path.expanduser(options.outputFileDir)+outTag+'/'+utils.IO.signalName[0].split("/")[len(utils.IO.signalName[0].split("/"))-1].replace("output_","").replace(".root","")+"_preselection_diffNaming"+".root"
+       processPath=os.path.expanduser(options.outputFileDir)+outTag+'/'+utils.IO.signalName[0].split("/")[len(utils.IO.signalName[i].split("/"))-1].replace("output_","").replace(".root","")+"_preselection_diffNaming"+".root"
        if not options.addHHTagger:
              postprocessing.saveTree(processPath,dictVar,nCleaned,Y_pred_sig,Y_pred_sig1,Y_pred_sig2,nameTree="reducedTree_sig%s"%treeTag)
        else:    
@@ -468,7 +480,7 @@ if __name__ == "__main__":
                         help="decide if you want to process or not data",
                         ),
             make_option("-f","--outputFileDir",
-                        action="store",type="string",dest="outputFileDir",default="/eos/user/m/mukherje/HH_bbgg/Training_Ntuple/11_06_2020_MIX_VBFHH_nodes_fullMX_2018_duplicate_2/",
+                        action="store",type="string",dest="outputFileDir",default="/eos/user/m/mukherje/HH_bbgg/Training_Ntuple/11_06_2020_MIX_VBFHH_nodes_fullMX_2018/",
                         help="directory where to save output trees",
                         ),
             ]
