@@ -432,16 +432,15 @@ def get_total_test_sample(x_sig,x_bkg,splitting=0.5):
     halfSample_b = int((x_b.size/len(x_b.columns))*splitting)
     return np.concatenate([np.split(x_s,[halfSample_s])[1],np.split(x_b,[halfSample_b])[1]])
 
-def get_total_test_sample_event_num(x_sig,x_bkg,event_sig,event_bkg,sig_frac=2,bkg_frac=5):
-    x_s = x_sig[np.where(event_sig%sig_frac==0)]
+def get_total_test_sample_event_num(x_sig,x_bkg,event_sig,event_bkg,sig_frac=4,bkg_frac=5):
+    x_s = x_sig[np.where(event_sig%sig_frac!=0)]
     x_b = x_bkg[np.where(event_bkg%bkg_frac==0)]
     return np.concatenate((x_s,x_b))
 
-def get_total_training_sample_event_num(x_sig,x_bkg,event_sig,event_bkg,sig_frac=2,bkg_frac=5):
-    x_s = x_sig[np.where(event_sig%sig_frac!=0)]
+def get_total_training_sample_event_num(x_sig,x_bkg,event_sig,event_bkg,sig_frac=4,bkg_frac=5):
+    x_s = x_sig[np.where(event_sig%sig_frac==0)]
     x_b = x_bkg[np.where(event_bkg%bkg_frac!=0)]
     return np.concatenate((x_s,x_b))
-
 
 
             
@@ -487,16 +486,16 @@ def vbfhh_reweight_F(CV,C2V,kl):
 
 
 def set_signals(branch_names,shuffle,cuts='event>=0'):
-    sigA = 0.0015929203539823008
-    sigB = 0.013923303834808259
-    sigC = 0.0012979351032448377
-    sigD = 0.004277286135693214
-    sigE = 0.010412979351032449
-    sigF = 0.06339233038348081
+    sigA = 0.001668
+    sigB = 0.01374
+    sigC = 0.001375
+    sigD = 0.004454
+    sigE = 0.01046
+    sigF = 0.0638
     VBFHH_samples_xsec = []
     VBFHH_samples_xsec.append(sigA)
     VBFHH_samples_xsec.append(sigB)
-    VBFHH_samples_xsec.append(sigB)
+    VBFHH_samples_xsec.append(sigC)
     VBFHH_samples_xsec.append(sigD)
     VBFHH_samples_xsec.append(sigE)
     VBFHH_samples_xsec.append(sigF)
@@ -505,18 +504,20 @@ def set_signals(branch_names,shuffle,cuts='event>=0'):
         treeName = utils.IO.signalTreeName[i]
         print "using tree:"+treeName
         if utils.IO.reweightVBFHH==True :
-            vbfhh_signal_dataframes.append((rpd.read_root(utils.IO.signalName[i],treeName, columns = branch_names)).query(cuts))
+            vbfhh_signal_dataframes.append((rpd.read_root(utils.IO.signalName[i],treeName, columns = branch_names+branch_cuts+event_branches+additionalCut_names+signal_trainedOn)).query(cuts))
             vbfhh_signal_dataframes[i]['weight']*=VBFHH_samples_xsec[i] #multiply each sample with its own cross section
             vbfhh_rew_sf = 0.
             for num_coup in range(0,len(utils.IO.vbfhh_cv)) :
                 vbfhh_rew_sf+=vbfhh_reweight(i,utils.IO.vbfhh_cv[num_coup],utils.IO.vbfhh_c2v[num_coup],utils.IO.vbfhh_kl[num_coup])
             vbfhh_signal_dataframes[i]['weight']*=vbfhh_rew_sf
+        elif utils.IO.signalMixOfNodes==True :
+            vbfhh_signal_dataframes.append((rpd.read_root(utils.IO.signalName[i],treeName, columns = branch_names)).query(cuts))
         else :
             print "using tree:"+treeName
             utils.IO.signal_df.append((rpd.read_root(utils.IO.signalName[i],treeName, columns = branch_names)).query(cuts))
             define_process_weight(utils.IO.signal_df[i],utils.IO.sigProc[i],utils.IO.signalName[i],treeName)
             utils.IO.signal_df[i]['year'] = (np.ones_like(utils.IO.signal_df[i].index)*utils.IO.sigYear[i] ).astype(np.int8)
-    if utils.IO.reweightVBFHH==True :
+    if utils.IO.reweightVBFHH==True  or utils.IO.signalMixOfNodes==True  :
         utils.IO.signal_df.append(pd.concat([vbfhh_signal_dataframes[i] for i in range(0,utils.IO.nSig)],ignore_index=True))
         utils.IO.signal_df[0]['year'] = (np.ones_like(utils.IO.signal_df[0].index)*utils.IO.sigYear[0] ).astype(np.int8)
         define_process_weight(utils.IO.signal_df[0],utils.IO.sigProc[0],utils.IO.signalName[0],treeName)
@@ -662,8 +663,12 @@ def set_variables(branch_names,use_event_num=False):
     for i in range(utils.IO.nSig):
         if i ==0:
             y_sig = utils.IO.signal_df[i][['proc']]
-            w_sig = utils.IO.signal_df[i][['weight']]
+            #w_sig = utils.IO.signal_df[i][['weight']]
+            sig_weight = np.sum(utils.IO.signal_df[i]['weight'])
+            print sig_weight
+            w_sig = utils.IO.signal_df[i][['weight']]/sig_weight
             if use_event_num :  event_sig = utils.IO.signal_df[i][['event']]
+            print branch_names
             for j in range(len(branch_names)):
                 if j == 0:
                     X_sig = utils.IO.signal_df[i][[branch_names[j].replace('noexpand:','')]]
@@ -671,8 +676,12 @@ def set_variables(branch_names,use_event_num=False):
                     X_sig = np.concatenate([X_sig,utils.IO.signal_df[i][[branch_names[j].replace('noexpand:','')]]],axis=1)
         else:
             y_sig = np.concatenate((y_sig,utils.IO.signal_df[i][['proc']]))
-            w_sig = np.concatenate((w_sig,utils.IO.signal_df[i][['weight']]))
+            sig_weight = np.sum(utils.IO.signal_df[i]['weight'])
+            print "multi signal inclusion"
+            print sig_weight
+            w_sig = np.concatenate((w_sig,utils.IO.signal_df[i][['weight']]/sig_weight))
             if use_event_num : event_sig = np.concatenate((event_sig,utils.IO.signal_df[i][['event']]))
+            print branch_names
             for j in range(len(branch_names)):
                 if j == 0:
                     X_sig_2 = utils.IO.signal_df[i][[branch_names[j].replace('noexpand:','')]]
