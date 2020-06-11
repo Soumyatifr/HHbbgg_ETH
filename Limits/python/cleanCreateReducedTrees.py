@@ -16,17 +16,19 @@ import json
 
 treeDir = 'tagsDumper/trees/'
 #samples = ["VBFHHTo2B2G_CV_1_C2V_2_C3_1","VBFHHTo2B2G_CV_1_C2V_1_C3_1","GluGluToHHTo2B2G_node_all","ggh","vh","qqh","tth","DiPhotonJetsBox_","DiPhotonJetsBox2BJets_","DiPhotonJetsBox1BJet_","GJet_Pt-20to40","GJet_Pt-40toInf"]#
-samples = ["VBFHHTo2B2G_CV_1_C2V_0_C3_1","GJet_Pt-20to40","GJet_Pt-40toInf","hh_LO"]
-#sample = ["DiPhotonJetsBox_","DiPhotonJetsBox1BJet_","DiPhotonJetsBox2BJets_"]
 #samples = ["VBFHHTo2B2G_CV_1_C2V_0_C3_1","hh_LO"]
-#samples = ["ggh","vh","qqh","tth"]
+samples = ["VBFHHTo2B2G_CV_1_C2V_0_C3_1","VBFHHTo2B2G_CV_1_C2V_1_C3_1","DiPhotonJetsBox_","DiPhotonJetsBox1BJet_","DiPhotonJetsBox2BJets_","GJet_Pt-40toInf","hh_LO"]
+#samples = ["VBFHHTo2B2G_CV_1_C2V_0_C3_1","VBFHHTo2B2G_CV_1_C2V_1_C3_1"]
+#samples = ["tth"]
+#samples = ["VBFHHTo2B2G_CV_1_C2V_0_C3_1","GJet_Pt-40toInf"]
+#samples = ["VBFHHTo2B2G_CV_1_C2V_0_C3_1","GJet_Pt-20to40"]
 background_names = []
 #samples = ["VBFHHTo2B2G_CV_1_C2V_1_C3_1","DiPhotonJetsBox_", "DiPhotonJetsBox2BJets"]#
 cleanOverlap = True   # Do not forget to change it 
 #treeTag="_2017"
 treeTag=""
 NodesNormalizationFile = '/afs/cern.ch/user/n/nchernya/public/Soumya/reweighting_normalization_26_11_2019.json'
-useMixOfNodes = True
+useMixOfNodes =True
 whichNodes = ['SM']  #used to create cumulative on SM only
 doRhoReweight = False
 
@@ -46,8 +48,8 @@ def addSamples():#define here the samples you want to process
       year_str='2017'
     elif year==2:
       year_str='2018'
-    gghhname="hh2016_13TeV_125"
-    vbfhh_name="vbfhh2016_13TeV_125"
+    gghhname="hh2018_13TeV_125"
+    vbfhh_name="vbfhh2018_13TeV_125"
     #gghname = "ggh2016_13TeV_125"
     gghname = "GluGluHToGG_M125_13TeV_amcatnloFXFX_pythia8"
     vhname =  "vh2016_13TeV_125"
@@ -59,32 +61,36 @@ def addSamples():#define here the samples you want to process
     ggHHMixOfNodesNormalizations = json.loads(open(NodesNormalizationFile).read())
     utils.IO.use_signal_nodes(useMixOfNodes,whichNodes,ggHHMixOfNodesNormalizations) 
     files= os.listdir(utils.IO.ldata+ntuples)
+  
+  
+
+
 
 #    couplings = 'CV_1_C2V_1_C3_1,CV_1_C2V_2_C3_1,CV_1_C2V_1_C3_2,CV_1_C2V_1_C3_0,CV_0_5_C2V_1_C3_1,CV_1_5_C2V_1_C3_1'.split(',') ### THE ORDER IS EXTREMELY IMPRORTANT, DO NOT CHANGE
 #    signal = []
 #    for coup in couplings :
-#          signal.append('output_VBFHHTo2B2G_%s_13TeV-madgraph.root'%coup)
-          #signal.append('output_VBFHHTo2B2G_%s_TuneCP5_PSWeights_13TeV-madgraph-pythia8.root'%coup)
+#          signal.append('output_VBFHHTo2B2G_%s_dipoleRecoilOff-TuneCUETP8M1_PSweights_13TeV-madgraph-pythia8.root'%coup)
+#          signal.append('output_VBFHHTo2B2G_%s_dipoleRecoilOff-TuneCP5_PSweights_13TeV-madgraph-pythia8.root'%coup)
 #    print ("The vbfhh samples are:")
 #    print signal
-#    signal_name = 'vbfhh2016_13TeV_125_13TeV_VBFDoubleHTag_0'
-    utils.IO.reweightVBFHH = False
+#    signal_name = 'vbfhh2018_13TeV_125_13TeV_VBFDoubleHTag_0'
+#    utils.IO.reweightVBFHH = True
 #    utils.IO.vbfhh_cv = [1.]
-#    utils.IO.vbfhh_c2v = [0.]
-#    utils.IO.vbfhh_kl = [1.]
+#    utils.IO.vbfhh_c2v = [1.]
+#    utils.IO.vbfhh_kl = [-2.0]
 #    for sig in signal:
 #        utils.IO.add_signal(ntuples,sig,1,'tagsDumper/trees/%s'%signal_name,year)
    # for iSample in samples:
     for num,iSample in enumerate(samples):
             process  = [s for s in files if iSample in s]
-            if "VBFHHTo2B2G_CV_1_C2V_0_C3_1" in iSample:
-              utils.IO.add_signal(ntuples,process,1,treeDir+vbfhh_name+'_13TeV_VBFDoubleHTag_0',year)
+#            if "VBFHHTo2B2G_CV_1_C2V_0_C3_1" in iSample:
+#              utils.IO.add_signal(ntuples,process,1,treeDir+vbfhh_name+'_13TeV_VBFDoubleHTag_0',year)
 #        else :
-#            if "VBFHHTo2B2G" in iSample:
-#               if utils.IO.reweightVBFHH==False:
-#                          utils.IO.add_signal(ntuples,process,1,treeDir+vbfhh_name+'_13TeV_VBFDoubleHTag_0',year)
-#               else :
-#                          print 'signal samples are already added'
+            if "VBFHHTo2B2G" in iSample:
+               if utils.IO.reweightVBFHH==False:
+                          utils.IO.add_signal(ntuples,process,1,treeDir+vbfhh_name+'_13TeV_VBFDoubleHTag_0',year)
+               else :
+                          print 'signal samples are already added'
             #print 'adding bkg with process num : ',process[0],"  ",-num
             elif ("GluGluToHHTo2B2G" in iSample) and (useMixOfNodes==False):
               utils.IO.add_background(ntuples,process,-num,treeDir+gghhname+'_13TeV_VBFDoubleHTag_0',year)
@@ -93,9 +99,12 @@ def addSamples():#define here the samples you want to process
               utils.IO.use_signal_nodes(useMixOfNodes,whichNodes,ggHHMixOfNodesNormalizations)
               utils.IO.add_background(ntuples,process,-num,treeDir+gghhname+'_13TeV_VBFDoubleHTag_0',year)
               background_names.append(samples[num].replace('-','_'))
-            elif ("ggh" in iSample):
-              utils.IO.add_background(ntuples,process,-num,treeDir+gghname+'_13TeV_VBFDoubleHTag_0',year)
-              background_names.append(samples[num].replace('-','_'))
+            #elif ("VBFHHTo2B2G_CV_1_C2V_0_C3_1" in iSample):
+            #  utils.IO.add_background(ntuples,process,-num,treeDir+vbfhh_name+'_13TeV_VBFDoubleHTag_0',year)
+            #  background_names.append(samples[num].replace('-','_'))
+            #elif ("VBFHHTo2B2G_CV_1_C2V_0_C3_1" in iSample):
+            #  utils.IO.add_background(ntuples,process,-num,treeDir+vbfhh_name+'_13TeV_VBFDoubleHTag_0',year)
+            #  background_names.append(samples[num].replace('-','_'))
             elif ("vh" in iSample):
               utils.IO.add_background(ntuples,process,-num,treeDir+vhname+'_13TeV_VBFDoubleHTag_0',year)
               background_names.append(samples[num].replace('-','_'))
@@ -153,8 +162,8 @@ def main(options,args):
     print options.addnodes
     addSamples()
     
-    branch_names = 'leadingJet_DeepFlavour,subleadingJet_DeepFlavour,absCosThetaStar_CS,absCosTheta_bb,absCosTheta_gg,diphotonCandidatePtOverdiHiggsM,dijetCandidatePtOverdiHiggsM,customLeadingPhotonIDMVA,customSubLeadingPhotonIDMVA,leadingPhotonSigOverE,subleadingPhotonSigOverE,sigmaMOverM,noexpand:(leadingPhoton_pt/CMS_hgg_mass),noexpand:(subleadingPhoton_pt/CMS_hgg_mass),noexpand:(leadingJet_pt/Mjj),noexpand:(subleadingJet_pt/Mjj),rho,noexpand:(leadingJet_bRegNNResolution*1.4826),noexpand:(subleadingJet_bRegNNResolution*1.4826),noexpand:(sigmaMJets*1.4826),PhoJetMinDr,PhoJetOtherDr,noexpand:(VBFleadJet_pt/VBFJet_mjj),VBFleadJet_eta,noexpand:(VBFsubleadJet_pt/VBFJet_mjj),VBFsubleadJet_eta,VBFCentrality_jg,VBFCentrality_jb,VBFDeltaR_jg,VBFDeltaR_jb,VBFProd_eta,VBFJet_mjj,VBFJet_Delta_eta,VBFleadJet_QGL,VBFsubleadJet_QGL,diHiggs_pt,MX'.split(",")
-    additionalCut_names = 'CMS_hgg_mass,Mjj,MX,ttHScore,btagReshapeWeight,VBFleadJet_PUID,VBFsubleadJet_PUID'.split(',')
+    branch_names = 'leadingJet_DeepFlavour,subleadingJet_DeepFlavour,absCosTheta_bb,absCosTheta_gg,diphotonCandidatePtOverdiHiggsM,dijetCandidatePtOverdiHiggsM,customLeadingPhotonIDMVA,customSubLeadingPhotonIDMVA,leadingPhotonSigOverE,subleadingPhotonSigOverE,sigmaMOverM,noexpand:(leadingPhoton_pt/CMS_hgg_mass),noexpand:(subleadingPhoton_pt/CMS_hgg_mass),noexpand:(leadingJet_pt/Mjj),noexpand:(subleadingJet_pt/Mjj),rho,noexpand:(leadingJet_bRegNNResolution*1.4826),noexpand:(subleadingJet_bRegNNResolution*1.4826),noexpand:(sigmaMJets*1.4826),PhoJetMinDr,PhoJetOtherDr,noexpand:(VBFleadJet_pt/VBFJet_mjj),VBFleadJet_eta,noexpand:(VBFsubleadJet_pt/VBFJet_mjj),VBFsubleadJet_eta,VBFCentrality_jg,VBFCentrality_jb,VBFDeltaR_jg,VBFDeltaR_jb,VBFProd_eta,VBFJet_mjj,VBFJet_Delta_eta,VBFleadJet_QGL,VBFsubleadJet_QGL,diHiggs_pt,MX'.split(",")
+    additionalCut_names = 'CMS_hgg_mass,Mjj,MX,ttHScore,btagReshapeWeight,VBFleadJet_PUID,VBFsubleadJet_PUID,absCosThetaStar_CS'.split(',')
  #   additionalCut_names = 'CMS_hgg_mass,Mjj,MX'.split(',')
   #  if options.addHHTagger:
     additionalCut_names += 'HHbbggMVA'.split(",")
@@ -177,8 +186,8 @@ def main(options,args):
  #   cuts = 'leadingJet_pt>20 & subleadingJet_pt> 20 & (leadingJet_pt/leadingJet_bRegNNCorr>20) & (subleadingJet_pt/subleadingJet_bRegNNCorr>20) '
     #cuts = 'VBFleadJet_eta < 4.7 & VBFsubleadJet_eta < 4.7 & VBFleadJet_pt > 40'
     #cuts = 'VBFsubleadJet_eta < 4.7'
-    #cuts = 'ttHScore > 0.26 & MX > 500'
-    cuts = 'MX > 500'
+    cuts = 'ttHScore > 0.26'
+    #cuts = 'MX > 500'
 
     #if not options.addData:
     #   cuts = 'leadingJet_pt>0 '
@@ -191,7 +200,15 @@ def main(options,args):
     branch_names = [c.strip() for c in branch_names]
     print "using following variables for MVA: " 
     print branch_names
-    
+
+    vbfhh_signal_dataframes = []    
+    vbfhh_signal_dataframes.append((rpd.read_root(utils.IO.signalName[i],treeName, columns = branch_names)).query(cuts))
+   
+
+    utils.IO.signal_df.append(pd.concat([vbfhh_signal_dataframes[i] for i in range(0,utils.IO.nSig)],ignore_index=True))
+    utils.IO.signal_df[0]['year'] = (np.ones_like(utils.IO.signal_df[0].index)*utils.IO.sigYear[0] ).astype(np.int8)
+    define_process_weight(utils.IO.signal_df[0],utils.IO.sigProc[0],utils.IO.signalName[0],treeName)
+    utils.IO.nSig = 1 
     
     # no need to shuffle here, we just count events
     nodesWeightBranches=[]
@@ -207,16 +224,16 @@ def main(options,args):
  
     for i in range(utils.IO.nBkg):
         if "hh_LO" in utils.IO.backgroundName[i] : #ggHH : 
-           df_ggHH_NLO = (rpd.read_root('/eos/user/m/mukherje/HH_bbgg/Ntuples_30_04_2020/2016_NtuplesII/output_hh_nlo_kl_1_kt_1_2016.root','tagsDumper/trees/hh2016_13TeV_125_13TeV_VBFDoubleHTag_0', columns = ['weight','diHiggs_pt','PhoJetMinDr','genweight'])).query('genweight<0.1')
+           df_ggHH_NLO = (rpd.read_root('/eos/user/m/mukherje/HH_bbgg/Ntuples_30_04_2020/2018_NtuplesII/output_hh_nlo_kl_1_kt_1_2018.root','tagsDumper/trees/hh2018_13TeV_125_13TeV_VBFDoubleHTag_0', columns = ['weight','diHiggs_pt','PhoJetMinDr','genweight','MX','ttHScore'])).query('genweight<0.1 & ttHScore > 0.26')
            print utils.IO.backgroundName[i]
-           preprocessing.reweight_NLO_LO('diHiggs_pt',df_ggHH_NLO,utils.IO.background_df[i],np.linspace(0,600,100))
-           preprocessing.reweight_NLO_LO('PhoJetMinDr',df_ggHH_NLO,utils.IO.background_df[i],np.linspace(0,3,100))
+           #preprocessing.reweight_NLO_LO('diHiggs_pt',df_ggHH_NLO,utils.IO.background_df[i],np.linspace(0,600,100))
+           #preprocessing.reweight_NLO_LO('PhoJetMinDr',df_ggHH_NLO,utils.IO.background_df[i],np.linspace(0,3,100))
 
 
-    _,_,_ = plt.hist(utils.IO.signal_df[0]['rho'], np.linspace(0,100,100), facecolor='b',weights=utils.IO.signal_df[0]['weight'], alpha=0.5,normed=False,label='2016')
-    plt.xlabel('rho [GeV]')
-    plt.ylabel('A.U.')
-    plt.savefig('rho_2016.png')
+    #_,_,_ = plt.hist(utils.IO.signal_df[0]['rho'], np.linspace(0,100,100), facecolor='b',weights=utils.IO.signal_df[0]['weight'], alpha=0.5,normed=False,label='2016')
+    #plt.xlabel('rho [GeV]')
+    #plt.ylabel('A.U.')
+    #plt.savefig('rho_2016.png')
 
 
     #### Adding new deltaR (photon,jet) branches ####
@@ -326,6 +343,7 @@ def main(options,args):
             postprocessing.saveTree(processPath,dictVar,nCleaned,nameTree="reducedTree_data%s"%treeTag)
 ###########################   data  block  ends  ##############################################################
 
+
  
 ###########################  signal  block starts  ################################################################
     for isig in range(0,utils.IO.nSig):
@@ -417,11 +435,11 @@ if __name__ == "__main__":
                         ),
             make_option("-t","--training",
                         action="store", type="string",dest="trainingVersion",
-                        default="training_with_2016_MX_gt_500_ttHkiller_0",
+                        default="training_with_2018_11_06_2020_mixed_signal_MX_full",
                         help="MVA version to apply",
                         ),
             make_option("-x","--trainingDir",
-                        action="store",type="string",dest="trainingDir",default="/eos/user/m/mukherje/HH_bbgg/Training_Ntuple/",
+                        action="store",type="string",dest="trainingDir",default="/eos/user/m/mukherje/HH_bbgg/TrainingOutput/",
                         help="directory from where to load pklfile",
                         ),
             make_option("-o", "--out",
@@ -438,7 +456,7 @@ if __name__ == "__main__":
                         help="add or not reweighted nodes",
                         ),
             make_option("-y","--year",
-                        action="store",type=int,dest="year",default=0,
+                        action="store",type=int,dest="year",default=1,
                         help="which year : 2016-0,2017-1,2018-2",
                         ),
             make_option("-l","--ldata",
@@ -450,7 +468,7 @@ if __name__ == "__main__":
                         help="decide if you want to process or not data",
                         ),
             make_option("-f","--outputFileDir",
-                        action="store",type="string",dest="outputFileDir",default="/eos/user/m/mukherje/HH_bbgg/Training_Ntuple/2016_MX_gt_500_ttH_0/",
+                        action="store",type="string",dest="outputFileDir",default="/eos/user/m/mukherje/HH_bbgg/Training_Ntuple/11_06_2020_MIX_VBFHH_nodes_fullMX_2018_duplicate_2/",
                         help="directory where to save output trees",
                         ),
             ]
@@ -463,6 +481,10 @@ if __name__ == "__main__":
     pprint(options.__dict__)
 
     import ROOT
-    
+ 
+
+
+   
     main(options,args)
-        
+
+       
