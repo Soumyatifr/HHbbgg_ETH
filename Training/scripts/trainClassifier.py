@@ -32,11 +32,20 @@ start_time = time.time()
 def main(options,args):
     year=options.year
     #please specify which year you want 
-    Y = 2017
-    outstr = "%s_MX_gt_500_ttHkiller_0p26_NLO_reweight"%Y
+#    Y = options.year
+    Y = 2016
+#    if '28i16' in Y :
+#        year  =0
+#    if '2017' in Y :
+#        year  =1
+#    if '2018' in Y :
+#        year  =2
+#    outstr = "%s_MX_gt_500_ttHkiller_0p26_NLO_reweight_sigfrac_2_gghh_0p3"%Y
+    outstr = "%s_12_06_2020_mixed_signal_MX_gt_500"%Y
     doRhoReweight = False
     dirs = ['']
     ntuples = dirs[year]
+    print Y
     print year
     SMname = ['hh%s_13TeV_125_13TeV_VBFDoubleHTag_0'%Y]
     VBFname = ['vbfhh%s_13TeV_125_13TeV_VBFDoubleHTag_0'%Y]
@@ -54,7 +63,7 @@ def main(options,args):
     status,files = commands.getstatusoutput('! ls $data | sort -t_ -k 3 -n')
     files=files.split('\n')   
     print files    
-    signal = [s for s in files if ("VBFHHTo2B2G_CV_1_C2V_0_C3_1" in s) ]
+    signal = [s for s in files if ("VBFHHTo2B2G_CV_1_C2V_" in s) ]
     ggHH = [s for s in files if ("output_hh_LO_all_nodes_%s.root"%Y in s) ]
     diphotonJets = [s for s in files if "DiPhotonJetsBox_" in s]
     diphotonJets_1B = [s for s in files if "DiPhotonJetsBox1B" in s] # will use for limits
@@ -71,18 +80,19 @@ def main(options,args):
 #    for coup in couplings :
 #          signal.append('output_VBFHHTo2B2G_%s_dipoleRecoilOff-TuneCUETP8M1_PSweights_13TeV-madgraph-pythia8.root'%coup)
 #          signal.append('output_VBFHHTo2B2G_%s_dipoleRecoilOff-TuneCP5_PSweights_13TeV-madgraph-pythia8.root'%coup)
-    signal_name = 'vbfhh%s_13TeV_125_13TeV_VBFDoubleHTag_0'%Y
-    utils.IO.reweightVBFHH = False
+#    signal_name = 'vbfhh%s_13TeV_125_13TeV_VBFDoubleHTag_0'%Y
+#    utils.IO.reweightVBFHH = True
 #    utils.IO.vbfhh_cv = [1.]  
 #    utils.IO.vbfhh_c2v = [1.]
 #    utils.IO.vbfhh_kl = [-2.0]
 #************************************************************************************************************************************************
+    
+    for sig in signal:
+        utils.IO.add_signal(ntuples,sig,1,'tagsDumper/trees/%s'%VBFname[year],year)
 
-#    for sig in signal:
-#        utils.IO.add_signal(ntuples,sig,1,'tagsDumper/trees/%s'%signal_name,year)
-   
-    utils.IO.add_signal(ntuples,signal,1,'tagsDumper/trees/%s'%VBFname[year],year)
 
+
+#    utils.IO.add_signal(ntuples,signal,1,'tagsDumper/trees/%s'%VBFname[year],year)
     utils.IO.use_signal_nodes(useMixOfNodes,whichNodes,ggHHMixOfNodesNormalizations)
     utils.IO.add_background(ntuples,diphotonJets,-1,'tagsDumper/trees/'+diphotonJets[0][diphotonJets[0].find('output_')+7:diphotonJets[0].find('.root')].replace('-','_')+'_13TeV_VBFDoubleHTag_0',year)
     utils.IO.add_background(ntuples,diphotonJets_1B,-1,'tagsDumper/trees/'+diphotonJets_1B[0][diphotonJets_1B[0].find('output_')+7:diphotonJets_1B[0].find('.root')].replace('-','_')+'_13TeV_VBFDoubleHTag_0',year)
@@ -104,7 +114,7 @@ def main(options,args):
         print "using signal file n."+str(i)+": "+utils.IO.signalName[i]
 
 
-    utils.IO.plotFolder = '/afs/cern.ch/work/m/mukherje/Training_VBFHH/HHbbgg_ETH/Training/plots/%s/'%outstr
+    utils.IO.plotFolder = '/eos/user/m/mukherje/HH_bbgg/Trainingplots/%s/'%outstr
     if not os.path.exists(utils.IO.plotFolder):
         print utils.IO.plotFolder, "doesn't exist, creating it..."
         os.makedirs(utils.IO.plotFolder)
@@ -126,7 +136,7 @@ def main(options,args):
     event_branches+=['leadingJet_phi','leadingJet_eta','subleadingJet_phi','subleadingJet_eta']
     event_branches+=['leadingPhoton_eta','leadingPhoton_phi','subleadingPhoton_eta','subleadingPhoton_phi','ttHScore']
     #cuts = 'ttHScore > 0.26'
-    cuts = 'MX > 500 & ttHScore > 0.26'
+    cuts = 'ttHScore > 0.26 & MX > 500'
 
     resolution_weighting = 'ggbb' # None, gg or ggbb
     doOverlapRemoval=True   #diphotons overlap removal if using b-enriched samples
@@ -173,13 +183,12 @@ def main(options,args):
 #****************************gghh LO reweighting with respect to the NLO samples**********************************************************
     for bkg_type in range(utils.IO.nBkg): 
         if utils.IO.bkgProc[bkg_type] == -2 : #ggHH : 
-           df_ggHH_NLO = (rpd.read_root('/eos/user/m/mukherje/HH_bbgg/Ntuples_30_04_2020/2017_NtuplesII/output_hh_nlo_kl_1_kt_1_2017.root','tagsDumper/trees/hh%s_13TeV_125_13TeV_VBFDoubleHTag_0'%Y, columns = ['weight','diHiggs_pt','PhoJetMinDr','genweight'])).query('genweight<0.1')
-           df_ggHH_NLO= df_ggHH_NLO.query(cuts)
+           df_ggHH_NLO = (rpd.read_root('/eos/user/m/mukherje/HH_bbgg/Ntuples_30_04_2020/2016_NtuplesII/output_hh_nlo_kl_1_kt_1_2016.root','tagsDumper/trees/hh%s_13TeV_125_13TeV_VBFDoubleHTag_0'%Y, columns = ['weight','diHiggs_pt','PhoJetMinDr','genweight','MX','ttHScore'])).query('genweight<0.1 & ttHScore > 0.26 & MX > 500')
            print utils.IO.bkgProc[bkg_type]
            preprocessing.reweight_NLO_LO('diHiggs_pt',df_ggHH_NLO,utils.IO.background_df[bkg_type],np.linspace(0,600,100))        
            preprocessing.reweight_NLO_LO('PhoJetMinDr',df_ggHH_NLO,utils.IO.background_df[bkg_type],np.linspace(0,3,100))
-           utils.IO.background_df[bkg_type].event = utils.IO.background_df[bkg_type].event.astype('int64')
-           utils.IO.background_df[bkg_type] = utils.IO.background_df[bkg_type].query('event%5==0') 
+           #utils.IO.background_df[bkg_type].event = utils.IO.background_df[bkg_type].event.astype('int64')
+           #utils.IO.background_df[bkg_type] = utils.IO.background_df[bkg_type].query('event%3==0') 
 #****************************************************************************************************************************************
 
 
@@ -235,7 +244,7 @@ def main(options,args):
     clf = xgb.XGBClassifier(base_score=0.5, colsample_bylevel=1, colsample_bytree=1,
            gamma=0, learning_rate=0.1, max_delta_step=0, max_depth=4,
            min_child_weight=1e-06,  n_estimators=400,
-           nthread=n_threads, objective='multi:softprob', reg_alpha=0.0,
+           nthread=n_threads, objective='binary:logistic', reg_alpha=0.0,
            reg_lambda=0.05, scale_pos_weight=1, seed=None, silent=True,
            subsample=1)
 
@@ -258,10 +267,10 @@ def main(options,args):
     #pyplot.rcParams['figure.figsize'] = [5, 5]
     #pyplot.savefig('graph_2018_setII.png')
 
-    _,_,_ = plt.hist(utils.IO.signal_df[0]['PhoJetMinDr'], np.linspace(0,3,30), facecolor='b',weights=utils.IO.signal_df[0]['weight'], alpha=0.5,normed=False,label='2016')
+    _,_,_ = plt.hist(utils.IO.signal_df[0]['PhoJetMinDr'], np.linspace(0,3,30), facecolor='b',weights=utils.IO.signal_df[0]['weight'], alpha=0.5,normed=False,label='2018')
     plt.xlabel('rho [GeV]')
     plt.ylabel('A.U.')
-    plt.savefig('%s_2016.png'%Y)
+    plt.savefig('%s_2018.png'%Y)
 
     #_,_,_ = plt.hist(utils.IO.background_df[5]['MX'], np.linspace(0,2500,245), facecolor='b',weights=utils.IO.background_df[5]['weight'], alpha=0.5,normed=False,label='2016')
     #plt.xlabel('MX [GeV]')
@@ -270,10 +279,16 @@ def main(options,args):
 
 
 
-    joblib.dump(clf, os.path.expanduser('/afs/cern.ch/work/m/mukherje/Training_VBFHH/HHbbgg_ETH/Training/output_files/training_with_%s.pkl'%outstr), compress=9)
+    joblib.dump(clf, os.path.expanduser('/eos/user/m/mukherje/HH_bbgg/TrainingOutput/training_with_%s.pkl'%outstr), compress=9)
 
     plot_classifier = plotting.plot_classifier_output(clf,-1,X_total_train,X_total_test,y_total_train,y_total_test,w_total_train,w_total_test,outString=outstr)
     plot_classifier_gghh = plotting.plot_classifier_output(clf,-2,X_total_train,X_total_test,y_total_train,y_total_test,w_total_train,w_total_test,outString=outstr) 
+
+    plot_classifier_weight = plotting.plot_classifier_output_weight(clf,-1,X_total_train,X_total_test,y_total_train,y_total_test,w_total_train,w_total_test,outString=outstr)
+    plot_classifier_gghh_weight = plotting.plot_classifier_output_weight(clf,-2,X_total_train,X_total_test,y_total_train,y_total_test,w_total_train,w_total_test,outString=outstr) 
+
+
+
 
     fpr_dipho,tpr_dipho = plotting.plot_roc_curve_multiclass_singleBkg(X_total_test,y_total_test,clf,-1,outString=outstr,weights=w_total_test)
     fpr_gJets,tpr_gJets = plotting.plot_roc_curve_multiclass_singleBkg(X_total_test,y_total_test,clf,-2,outString=outstr,weights=w_total_test)
